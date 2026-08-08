@@ -12,6 +12,8 @@ import meteordevelopment.meteorclient.utils.Utils;
 import meteordevelopment.meteorclient.utils.player.PlayerUtils;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import java.util.Random;
 
 import static meteordevelopment.meteorclient.MeteorClient.mc;
@@ -55,11 +57,38 @@ public class RejectsUtils {
 
     public static boolean inFov(Entity entity, double fov) {
         if (fov >= 360) return true;
-        float[] angle = PlayerUtils.calculateAngle(entity.getBoundingBox().getCenter());
-        double xDist = Mth.degreesDifferenceAbs(angle[0], mc.player.getYRot());
-        double yDist = Mth.degreesDifferenceAbs(angle[1], mc.player.getXRot());
-        double angleDistance = Math.hypot(xDist, yDist);
-        return angleDistance <= fov / 2.0;
+        if (mc.player == null || entity == null) return false;
+
+        Vec3 eyePos = mc.player.getEyePosition();
+        AABB box = entity.getBoundingBox();
+
+        // Direct ray collision check: if looking anywhere at the target's bounding box
+        Vec3 lookVec = mc.player.getViewVector(1.0f);
+        Vec3 endVec = eyePos.add(lookVec.x * 100, lookVec.y * 100, lookVec.z * 100);
+        if (box.clip(eyePos, endVec).isPresent()) {
+            return true;
+        }
+
+        // Test key points on the target entity (head/eyes, center, top, feet)
+        Vec3[] testPoints = new Vec3[] {
+            entity.getEyePosition(),
+            box.getCenter(),
+            new Vec3(entity.getX(), box.maxY, entity.getZ()),
+            new Vec3(entity.getX(), box.minY, entity.getZ())
+        };
+
+        double minAngleDist = Double.MAX_VALUE;
+        for (Vec3 point : testPoints) {
+            float[] angle = PlayerUtils.calculateAngle(point);
+            double xDist = Mth.degreesDifferenceAbs(angle[0], mc.player.getYRot());
+            double yDist = Mth.degreesDifferenceAbs(angle[1], mc.player.getXRot());
+            double dist = Math.hypot(xDist, yDist);
+            if (dist < minAngleDist) {
+                minAngleDist = dist;
+            }
+        }
+
+        return minAngleDist <= fov / 2.0;
     }
 
     public static float fullFlightMove(PlayerMoveEvent event, double speed, boolean verticalSpeedMatch) {
