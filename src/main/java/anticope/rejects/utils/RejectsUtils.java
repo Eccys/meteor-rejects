@@ -62,7 +62,12 @@ public class RejectsUtils {
         Vec3 eyePos = mc.player.getEyePosition();
         AABB box = entity.getBoundingBox();
 
-        // Direct ray collision check: if looking anywhere at the target's bounding box
+        // 1. If player is inside or overlapping the target entity's bounding box
+        if (box.contains(eyePos) || box.intersects(mc.player.getBoundingBox())) {
+            return true;
+        }
+
+        // 2. Direct ray collision check: if looking anywhere at the target's bounding box
         Vec3 lookVec = mc.player.getViewVector(1.0f);
         Vec3 endVec = eyePos.add(lookVec.x * 100, lookVec.y * 100, lookVec.z * 100);
         if (box.clip(eyePos, endVec).isPresent()) {
