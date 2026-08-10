@@ -64,7 +64,7 @@ dependencies {
 //	implementation (include('com.github.19MisterX98.SeedcrackerX:seedcrackerx-api:master-SNAPSHOT')) {transitive = false}
 
 	// Exploit Preventer (optional)
-	modCompileOnly("com.nikoverflow:exploit-preventer-api:0.0.1")
+	modCompileOnly("com.nikoverflow:exploit-preventer-api:1.0.0")
 
 	configurations.implementation.extendsFrom(configurations.extraLibs)
 }
