@@ -218,7 +218,7 @@ public class MeteorRoundedGuiTheme extends GuiTheme {
 
     @Override
     protected WConfirmedButton confirmedButton(String s, String s1, GuiTexture guiTexture) {
-        return null;
+        return w(new meteordevelopment.meteorclient.gui.themes.meteor.widgets.pressable.WMeteorConfirmedButton(s, s1, guiTexture));
     }
 
     @Override
@@ -228,7 +228,7 @@ public class MeteorRoundedGuiTheme extends GuiTheme {
 
     @Override
     public WConfirmedMinus confirmedMinus() {
-        return null;
+        return w(new meteordevelopment.meteorclient.gui.themes.meteor.widgets.pressable.WMeteorConfirmedMinus());
     }
 
     @Override
