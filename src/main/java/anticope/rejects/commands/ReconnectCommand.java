@@ -18,10 +18,15 @@ public class ReconnectCommand extends Command {
     public void build(LiteralArgumentBuilder<ClientSuggestionProvider> builder) {
         builder.executes(context -> {
             ServerData info = mc.isLocalServer() ? null : mc.getCurrentServer();
-            if (info != null) {
-                mc.level.disconnect(net.minecraft.network.chat.Component.literal("Reconnecting"));
-                ConnectScreen.startConnecting(new JoinMultiplayerScreen(new TitleScreen()), mc,
-                        ServerAddress.parseString(info.ip), info, false, null);
+            if (info != null && mc.level != null) {
+                var level = mc.level;
+                // Wait for chat submission to finish so it cannot close the connection screen.
+                mc.schedule(() -> {
+                    if (mc.level != level) return;
+                    level.disconnect(net.minecraft.network.chat.Component.literal("Reconnecting"));
+                    ConnectScreen.startConnecting(new JoinMultiplayerScreen(new TitleScreen()), mc,
+                            ServerAddress.parseString(info.ip), info, false, null);
+                });
             }
             return SINGLE_SUCCESS;
         });
