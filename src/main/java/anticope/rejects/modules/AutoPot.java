@@ -103,6 +103,10 @@ public class AutoPot extends Module {
     @EventHandler
     private void onTick(TickEvent.Pre event) {
         if (mc.player.isUsingItem()) return;
+        if (drinking || splashing) {
+            stopPotionUsage();
+            return;
+        }
         for (MobEffect statusEffect : usablePotions.get()) {
             Holder<MobEffect> registryEntry = BuiltInRegistries.MOB_EFFECT.wrapAsHolder(statusEffect);
             if (!mc.player.hasEffect(registryEntry)) {

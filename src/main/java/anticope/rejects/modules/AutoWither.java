@@ -160,14 +160,17 @@ public class AutoWither extends Module {
             switch (priority.get()) {
                 case Closest:
                     withers.sort(Comparator.comparingDouble(w -> PlayerUtils.distanceTo(w.foot)));
+                    break;
                 case Furthest:
                     withers.sort((w1, w2) -> {
                         int sort = Double.compare(PlayerUtils.distanceTo(w1.foot), PlayerUtils.distanceTo(w2.foot));
                         if (sort == 0) return 0;
                         return sort > 0 ? -1 : 1;
                     });
+                    break;
                 case Random:
                     Collections.shuffle(withers);
+                    break;
             }
             
             wither = withers.get(0);
@@ -240,6 +243,7 @@ public class AutoWither extends Module {
                     if (turnOff.get()) toggle();
                     break;
             }
+            blockTicksWaited = 0;
         }
 
         witherTicksWaited = 0;
@@ -260,16 +264,16 @@ public class AutoWither extends Module {
         BlockPos leftHead = wither.foot.above().above().relative(wither.axis, -1);
         BlockPos rightHead = wither.foot.above().above().relative(wither.axis, 1);
         
-        event.renderer.box((double) midHead.getX() + 0.2, midHead.getX(), (double) midHead.getX() + 0.2,
-                (double) midHead.getX() + 0.8, (double) midHead.getX() + 0.7, (double) midHead.getX() + 0.8,
+        event.renderer.box((double) midHead.getX() + 0.2, (double) midHead.getY(), (double) midHead.getZ() + 0.2,
+                (double) midHead.getX() + 0.8, (double) midHead.getY() + 0.7, (double) midHead.getZ() + 0.8,
                 sideColor.get(), lineColor.get(), shapeMode.get(), 0);
         
-        event.renderer.box((double) leftHead.getX() + 0.2, leftHead.getX(), (double) leftHead.getX() + 0.2,
-                (double) leftHead.getX() + 0.8, (double) leftHead.getX() + 0.7, (double) leftHead.getX() + 0.8,
+        event.renderer.box((double) leftHead.getX() + 0.2, (double) leftHead.getY(), (double) leftHead.getZ() + 0.2,
+                (double) leftHead.getX() + 0.8, (double) leftHead.getY() + 0.7, (double) leftHead.getZ() + 0.8,
                 sideColor.get(), lineColor.get(), shapeMode.get(), 0);
         
-        event.renderer.box((double) rightHead.getX() + 0.2, rightHead.getX(), (double) rightHead.getX() + 0.2,
-                (double) rightHead.getX() + 0.8, (double) rightHead.getX() + 0.7, (double) rightHead.getX() + 0.8,
+        event.renderer.box((double) rightHead.getX() + 0.2, (double) rightHead.getY(), (double) rightHead.getZ() + 0.2,
+                (double) rightHead.getX() + 0.8, (double) rightHead.getY() + 0.7, (double) rightHead.getZ() + 0.8,
                 sideColor.get(), lineColor.get(), shapeMode.get(), 0);
     }
     
@@ -291,7 +295,7 @@ public class AutoWither extends Module {
         // Check for non air blocks and entities
         BlockPos.MutableBlockPos bp = new BlockPos.MutableBlockPos();
         for (int x = blockPos.getX() - widthX; x <= blockPos.getX() + widthX; x++) {
-            for (int z = blockPos.getZ() - widthZ; z <= blockPos.getZ(); z++) {
+            for (int z = blockPos.getZ() - widthZ; z <= blockPos.getZ() + widthZ; z++) {
                 for (int y = blockPos.getY(); y <= blockPos.getY() + 2; y++) {
                     bp.set(x, y, z);
                     if (!mc.level.getBlockState(bp).canBeReplaced()) return false;
@@ -327,7 +331,7 @@ public class AutoWither extends Module {
             this.stage = 0;
             this.foot.set(pos);
             this.facing = dir;
-            this.axis = dir.getAxis();
+            this.axis = dir.getClockWise().getAxis();
             
             return this;
         }

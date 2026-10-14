@@ -55,7 +55,7 @@ public class BungeeCordSpoof extends Module {
     private void onPacketSend(PacketEvent.Send event) {
         if (event.packet instanceof ClientIntentionPacket packet && packet.intention() == ClientIntent.LOGIN) {
             if (whitelist.get() && !whitelistedServers.get().contains(Utils.getWorldName())) return;
-            String address = packet.hostName() + "\0" + forwardedIP + "\0" + mc.getUser().getProfileId().toString().replace("-", "")
+            String address = packet.hostName() + "\0" + forwardedIP.get() + "\0" + mc.getUser().getProfileId().toString().replace("-", "")
                     + (spoofProfile.get() ? getProperty() : "");
             ((HandshakeC2SPacketAccessor) (Object) packet).setHostName(address);
         }

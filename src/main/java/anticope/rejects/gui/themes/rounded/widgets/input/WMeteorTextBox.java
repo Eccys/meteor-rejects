@@ -52,7 +52,7 @@ public class WMeteorTextBox extends WTextBox implements MeteorWidget {
 
         // Text content
         if (!text.isEmpty()) {
-            renderer.text(text, x + pad - overflowWidth, y + pad, theme.textColor.get(), false);
+            this.renderer.render(renderer, x + pad - overflowWidth, y + pad, text, theme.textColor.get());
         }
         else if (placeholder != null) {
             this.renderer.render(renderer, x + pad - overflowWidth, y + pad, placeholder, theme.placeholderColor.get());

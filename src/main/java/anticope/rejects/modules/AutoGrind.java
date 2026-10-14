@@ -57,7 +57,7 @@ public class AutoGrind extends Module {
             return;
 
         MeteorExecutor.execute(() -> {
-            for (int i = 0; i <= mc.player.getInventory().getContainerSize(); i++) {
+            for (int i = 0; i < mc.player.getInventory().getContainerSize(); i++) {
                 if (canGrind(mc.player.getInventory().getItem(i))) {
                     try {
                         Thread.sleep(delay.get());

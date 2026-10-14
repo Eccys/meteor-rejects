@@ -65,7 +65,10 @@ public class ChatBot extends Module {
         for (String cmd : commands.get().keySet()) {
             if (msg.endsWith(prefix.get() + cmd)) {
                 Script script = compile(commands.get().get(cmd));
-                if (script == null) ChatUtils.sendPlayerMsg("An error occurred");
+                if (script == null) {
+                    ChatUtils.sendPlayerMsg("An error occurred");
+                    return;
+                }
                 try {
                     var section = MeteorStarscript.ss.run(script);
                     ChatUtils.sendPlayerMsg(section.text);

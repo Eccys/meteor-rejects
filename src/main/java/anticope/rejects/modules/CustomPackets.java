@@ -53,7 +53,7 @@ public class CustomPackets extends Module {
     @EventHandler
     private void onCustomPayloadPacket(PacketEvent.Receive event) {
         if (event.packet instanceof ClientboundCustomPayloadPacket packet) {
-            if (packet.payload().type().toString().equals("badlion:mods")) {
+            if (packet.payload().type().id().toString().equals("badlion:mods")) {
                 event.setCancelled(onBadlionModsPacket(packet));
             } else {
                 onUnknownPacket(packet);
@@ -65,7 +65,7 @@ public class CustomPackets extends Module {
 
     private void onUnknownPacket(ClientboundCustomPayloadPacket packet) {
         if (!unknownPackets.get()) return;
-        MutableComponent text = Component.literal(packet.payload().type().toString());
+        MutableComponent text = Component.literal(packet.payload().type().id().toString());
         buffer.clear();
         text.setStyle(
             text.getStyle().withHoverEvent(new HoverEvent.ShowText(Component.literal(readString(buffer))))
@@ -78,6 +78,7 @@ public class CustomPackets extends Module {
         buffer.clear();
         String json = readString(buffer);
         Map<String, BadlionMod> mods = GSON_NON_PRETTY.fromJson(json, BADLION_MODS_TYPE);
+        if (mods == null) return false;
         ChatUtils.sendMsg("Badlion", format("Mods", formatMods(mods)));
         return true;
     }

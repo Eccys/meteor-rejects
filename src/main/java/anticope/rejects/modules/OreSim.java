@@ -20,6 +20,7 @@ import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.QuartPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.ChunkPos;
@@ -266,7 +267,7 @@ public class OreSim extends Module {
                 int y = ore.heightProvider.sample(random, ore.heightContext);
                 BlockPos origin = new BlockPos(x,y,z);
 
-                ResourceKey<Biome> biome = chunk.getNoiseBiome(x,y,z).unwrapKey().get();
+                ResourceKey<Biome> biome = chunk.getNoiseBiome(QuartPos.fromBlock(x), QuartPos.fromBlock(y), QuartPos.fromBlock(z)).unwrapKey().get();
 
                 if (!getDefaultOres(biome).contains(ore)) {
                     continue;

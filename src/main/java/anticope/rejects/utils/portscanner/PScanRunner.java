@@ -23,6 +23,7 @@ public class PScanRunner {
             ports.forEach(port -> {
                 futures.add(isPortOpen(es, address.getHostAddress(), port, timeoutMS, threadDelay));
             });
+            es.shutdown();
             try {
                 es.awaitTermination(200L, TimeUnit.MILLISECONDS);
             } catch (InterruptedException ignored) {
@@ -42,6 +43,7 @@ public class PScanRunner {
 
     public void cancel() {
         running = false;
+        if (es != null) es.shutdownNow();
     }
 
     private Future<PortScannerManager.ScanResult> isPortOpen(ExecutorService es, String ip, int port, int timeout,
