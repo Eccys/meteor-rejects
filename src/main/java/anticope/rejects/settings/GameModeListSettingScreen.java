@@ -10,16 +10,16 @@ import java.util.List;
 
 public class GameModeListSettingScreen extends WindowScreen {
     private final GameModeListSetting setting;
-    private final WTable table;
+    private WTable table;
 
     public GameModeListSettingScreen(GuiTheme theme, GameModeListSetting setting) {
         super(theme, "Select Gamemodes");
         this.setting = setting;
-        table = super.add(theme.table()).expandX().widget();
     }
 
     @Override
     public void initWidgets() {
+        table = super.add(theme.table()).expandX().widget();
         List<GameType> gms = setting.get();
         for (GameType gameMode : GameType.values()) {
             table.add(theme.label(Utils.nameToTitle(gameMode.getName()))).expandCellX();
@@ -27,10 +27,10 @@ public class GameModeListSettingScreen extends WindowScreen {
             boolean contains = setting.get().contains(gameMode);
             WCheckbox checkbox = table.add(theme.checkbox(contains)).widget();
             checkbox.action = () -> {
-                if (contains) {
-                    gms.remove(gameMode);
+                if (checkbox.checked) {
+                    if (!gms.contains(gameMode)) gms.add(gameMode);
                 } else {
-                    gms.add(gameMode);
+                    gms.remove(gameMode);
                 }
             };
 

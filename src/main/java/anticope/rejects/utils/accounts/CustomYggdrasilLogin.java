@@ -47,7 +47,8 @@ public class CustomYggdrasilLogin {
                 throw new AuthenticationException(json.get("errorMessage").getAsString());
             }
             String token = json.get("accessToken").getAsString();
-            UUID uuid = UUID.fromString(json.get("selectedProfile").getAsJsonObject().get("id").getAsString());
+            String rawId = json.get("selectedProfile").getAsJsonObject().get("id").getAsString();
+            UUID uuid = UUID.fromString(rawId.contains("-") ? rawId : rawId.replaceFirst("(\\p{XDigit}{8})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}+)", "$1-$2-$3-$4-$5"));
             String username = json.get("selectedProfile").getAsJsonObject().get("name").getAsString();
             return new User(username, uuid, token, Optional.empty(), Optional.empty());
         } catch (Exception e) {
@@ -82,7 +83,7 @@ public class CustomYggdrasilLogin {
             if (!property.hasSignature()) {
                 return SignatureState.UNSIGNED;
             }
-            if (!publicKey.validateProperty(property)) {
+            if (publicKey == null || !publicKey.validateProperty(property)) {
                 return SignatureState.INVALID;
             }
             return SignatureState.SIGNED;

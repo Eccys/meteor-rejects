@@ -45,7 +45,7 @@ public class CustomYggdrasilAccount extends Account<CustomYggdrasilAccount> {
             cache.loadHead();
             return true;
         } catch (AuthenticationException e) {
-            if (e.getMessage().contains("Invalid username or password") || e.getMessage().contains("account migrated"))
+            if (e.getMessage() != null && (e.getMessage().contains("Invalid username or password") || e.getMessage().contains("account migrated")))
                 MeteorRejectsAddon.LOG.error("Wrong password.");
             else MeteorRejectsAddon.LOG.error("Failed to contact the authentication server.");
             return false;
@@ -56,6 +56,7 @@ public class CustomYggdrasilAccount extends Account<CustomYggdrasilAccount> {
     public CompoundTag toTag() {
         CompoundTag tag = super.toTag();
 
+        tag.putString("type", "Yggdrasil");
         tag.putString("password", password);
         tag.putString("server", server);
 

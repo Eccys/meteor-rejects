@@ -75,7 +75,7 @@ public class ServerCommand extends Command {
             ServerData server = mc.getCurrentServer();
             if (server == null) throw ADDRESS_ERROR.create();
             try {
-                return InetAddress.getByName(server.ip);
+                return InetAddress.getByName(net.minecraft.client.multiplayer.resolver.ServerAddress.parseString(server.ip).getHost());
             } catch (UnknownHostException e) {
                 throw ADDRESS_ERROR.create();
             }
