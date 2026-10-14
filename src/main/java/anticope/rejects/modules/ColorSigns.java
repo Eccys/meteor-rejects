@@ -37,11 +37,14 @@ public class ColorSigns extends Module {
     }
 
     @EventHandler
-    private void onPacketSend(PacketEvent.Send event) {
+    private void onPacketReceive(PacketEvent.Receive event) {
         if (event.packet instanceof ClientboundLoginPacket) {
             checkWarning();
-            return;
         }
+    }
+
+    @EventHandler
+    private void onPacketSend(PacketEvent.Send event) {
         if (signs.get() && event.packet instanceof ServerboundSignUpdatePacket packet) {
             for (int line = 0; line < packet.getLines().length; line++) {
                 packet.getLines()[line] = packet.getLines()[line]
@@ -68,10 +71,12 @@ public class ColorSigns extends Module {
     }
 
     private void checkWarning() {
-        assert mc.player != null;
-        MinecraftServer server = mc.player.level().getServer();
-        if (server == null) return;
-        String brand = server.getServerModName();
+        if (mc.player == null) return;
+        String brand = mc.player.connection != null ? mc.player.connection.serverBrand() : null;
+        if (brand == null) {
+            MinecraftServer server = mc.player.level().getServer();
+            if (server != null) brand = server.getServerModName();
+        }
         if (brand == null) return;
         if (brand.contains("Paper")) warning("You are on a paper server. Color signs won't work here");
     }

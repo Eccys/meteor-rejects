@@ -1,7 +1,11 @@
 package anticope.rejects.gui.screens;
 
 import anticope.rejects.utils.GiveUtils;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.reflect.TypeToken;
+import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.Property;
+import com.mojang.authlib.properties.PropertyMap;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import meteordevelopment.meteorclient.gui.GuiTheme;
 import meteordevelopment.meteorclient.gui.WindowScreen;
@@ -15,13 +19,10 @@ import meteordevelopment.meteorclient.utils.network.Http;
 import meteordevelopment.meteorclient.utils.network.MeteorExecutor;
 import meteordevelopment.meteorclient.utils.player.ChatUtils;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.IntArrayTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.ResolvableProfile;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -76,6 +77,7 @@ public class HeadScreen extends WindowScreen {
     private void loadHeads() {
         MeteorExecutor.execute(() -> {
             List<Map<String, String>> res = Http.get("https://minecraft-heads.com/scripts/api.php?cat="+getCat()).sendJson(gsonType);
+            if (res == null) return;
             List<ItemStack> heads = new ArrayList<>();
             res.forEach(a -> {
                 try {
@@ -109,24 +111,13 @@ public class HeadScreen extends WindowScreen {
 
     private ItemStack createHeadStack(String uuid, String value, String name) {
         ItemStack head = Items.PLAYER_HEAD.getDefaultInstance();
-        CompoundTag tag = new CompoundTag();
-        CompoundTag skullOwner = new CompoundTag();
         UUID parsedUuid = UUID.fromString(uuid);
-        skullOwner.put("Id", new IntArrayTag(new int[]{
-            (int)(parsedUuid.getMostSignificantBits() >> 32),
-            (int)parsedUuid.getMostSignificantBits(),
-            (int)(parsedUuid.getLeastSignificantBits() >> 32),
-            (int)parsedUuid.getLeastSignificantBits()
-        }));
-        CompoundTag properties = new CompoundTag();
-        ListTag textures = new ListTag();
-        CompoundTag Value = new CompoundTag();
-        Value.put("Value", net.minecraft.nbt.StringTag.valueOf(value));
-        textures.add(Value);
-        properties.put("textures", textures);
-        skullOwner.put("Properties", properties);
-        tag.put("SkullOwner", skullOwner);
-        head.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+        GameProfile profile = new GameProfile(
+            parsedUuid,
+            "Head",
+            new PropertyMap(ImmutableMultimap.of("textures", new Property("textures", value)))
+        );
+        head.set(DataComponents.PROFILE, ResolvableProfile.createResolved(profile));
         head.set(DataComponents.CUSTOM_NAME, Component.literal(name));
         return head;
     }

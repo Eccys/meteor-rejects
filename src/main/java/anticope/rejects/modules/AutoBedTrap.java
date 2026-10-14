@@ -91,6 +91,8 @@ public class AutoBedTrap extends Module {
                 break;
             }
         }
+        for (BlockPos.MutableBlockPos blockPos : blocks) blockPosPool.free(blockPos);
+        blocks.clear();
         if (noBlocks && isActive()) toggle(); 
     }
 
@@ -105,7 +107,7 @@ public class AutoBedTrap extends Module {
                 return true;
             }
 
-            if (blockTypes.get().contains(mc.level.getBlockState(b).getBlock())) return true;
+            if (blockTypes.get().contains(mc.level.getBlockState(b).getBlock())) continue;
 
             FindItemResult findBlock = InvUtils.findInHotbar((item) -> {
                 if (!(item.getItem() instanceof BlockItem)) return false;

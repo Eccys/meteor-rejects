@@ -95,7 +95,7 @@ public class RadarHud extends HudElement {
             Renderer2D.COLOR.render();
             if (mc.level != null) {
                 for (Entity entity : mc.level.entitiesForRendering()) {
-                    if (!entities.get().contains(entity.getType())) return;
+                    if (!entities.get().contains(entity.getType())) continue;
                     double xPos = ((entity.getX() - mc.player.getX()) * scale.get() * zoom.get() + width/2);
                     double yPos = ((entity.getZ() - mc.player.getZ()) * scale.get() * zoom.get()  + height/2);
                     if (xPos < 0 || yPos < 0 || xPos > width - scale.get() || yPos > height - scale.get()) continue;
@@ -120,7 +120,6 @@ public class RadarHud extends HudElement {
                     renderer.text(icon, xPos + x, yPos + y, waypoint.color.get(), false);
                 }
             }
-            Renderer2D.COLOR.render();
         });
         
     }

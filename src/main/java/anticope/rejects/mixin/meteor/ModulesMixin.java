@@ -28,7 +28,7 @@ public class ModulesMixin {
         Set<String> hiddenModules = RejectsConfig.get().hiddenModules;
         if (hiddenModules.isEmpty()) return;
 
-        List<Module> foundModules = groups.computeIfAbsent(category, category1 -> new ArrayList<>());
+        List<Module> foundModules = new ArrayList<>(groups.computeIfAbsent(category, category1 -> new ArrayList<>()));
         foundModules.removeIf(m -> hiddenModules.contains(m.name));
 
         cir.setReturnValue(foundModules);

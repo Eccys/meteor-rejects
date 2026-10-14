@@ -178,25 +178,26 @@ public class NewChunks extends Module {
 
 			if (!newChunks.contains(pos) && mc.level.getChunkSource().getChunkForLighting(packet.getX(), packet.getZ()) == null) {
 				LevelChunk chunk = new LevelChunk(mc.level, pos);
-				try {
-					taskExecutor.execute(() -> chunk.replaceWithPacketData(packet.getChunkData().getReadBuffer(), new java.util.HashMap<>(), packet.getChunkData().getBlockEntitiesTagsConsumer(packet.getX(), packet.getZ())));
-				} catch (ArrayIndexOutOfBoundsException e) {
-					return;
-				}
+				taskExecutor.execute(() -> {
+					try {
+						chunk.replaceWithPacketData(packet.getChunkData().getReadBuffer(), new java.util.HashMap<>(), packet.getChunkData().getBlockEntitiesTagsConsumer(packet.getX(), packet.getZ()));
+					} catch (ArrayIndexOutOfBoundsException e) {
+						return;
+					}
 
+					for (int x = 0; x < 16; x++) {
+						for (int z = 0; z < 16; z++) {
+							for (int y = chunk.getMinY(); y < chunk.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z); y++) {
+								FluidState fluid = chunk.getFluidState(x, y, z);
 
-				for (int x = 0; x < 16; x++) {
-					for (int z = 0; z < 16; z++) {
-						for (int y = mc.level.getMinY(); y < mc.level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z); y++) {
-							FluidState fluid = chunk.getFluidState(x, y, z);
-
-							if (!fluid.isEmpty() && !fluid.isSource()) {
-								oldChunks.add(pos);
-								return;
+								if (!fluid.isEmpty() && !fluid.isSource()) {
+									oldChunks.add(pos);
+									return;
+								}
 							}
 						}
 					}
-				}
+				});
 			}
 		}
 	}

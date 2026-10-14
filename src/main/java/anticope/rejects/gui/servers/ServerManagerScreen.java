@@ -118,7 +118,9 @@ public class ServerManagerScreen extends WindowScreen {
             Set<String> presentAddresses = new HashSet<>();
             int newIPs = 0;
             for (ServerData server : servers) presentAddresses.add(server.ip);
-            for (String addr : Minecraft.getInstance().keyboardHandler.getClipboard().split("[\r\n]+")) {
+            for (String addr : Files.readAllLines(filePath)) {
+                addr = addr.trim();
+                if (addr.isEmpty()) continue;
                 if (presentAddresses.add(addr = addr.split(" ")[0])) {
                     servers.add(new ServerData("Server discovery #" + presentAddresses.size(), addr, ServerData.Type.OTHER));
                     newIPs++;
