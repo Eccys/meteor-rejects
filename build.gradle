@@ -38,16 +38,13 @@ configurations {
 
 dependencies {
 	// This will make it work on most platforms. It automatically chooses the right dependencies at runtime.
-	extraLibs('dev.duti.acheong:cubiomes:1.22.3') { transitive = false }
-	extraLibs('dev.duti.acheong:cubiomes:1.22.3:linux64') { transitive = false }
-	extraLibs('dev.duti.acheong:cubiomes:1.22.3:osx') { transitive = false }
-	extraLibs('dev.duti.acheong:cubiomes:1.22.3:windows64') { transitive = false }
+	extraLibs files('libs/cubiomes-1.22.3.jar')
 	// To change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings files('libs/intermediary-named-26.1.2.jar')
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-	modImplementation fileTree(dir: 'libs', include: ['*.jar'], exclude: ['intermediary-named-26.1.2.jar'])
+	modImplementation fileTree(dir: 'libs', include: ['*.jar'], exclude: ['intermediary-named-26.1.2.jar', 'cubiomes-1.22.3.jar', 'baritone-meteor-26.1.jar'])
 	modCompileOnly files('libs/baritone-meteor-26.1.jar')
 
 	// seed .locate and ore sim
@@ -82,7 +79,7 @@ processResources {
 
 jar {
 	from("LICENSE") {
-		rename { "${it}_${base.archivesName}" }
+		rename { "${it}_${base.archivesName.get()}" }
 	}
 	from {
 		configurations.extraLibs.collect { it.isDirectory() ? it : zipTree(it) }

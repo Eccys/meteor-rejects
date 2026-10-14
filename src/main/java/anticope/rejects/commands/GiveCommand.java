@@ -70,16 +70,16 @@ public class GiveCommand extends Command {
         }));
 
         builder.then(literal("holo")
-            .then(argument("message", StringArgumentType.greedyString()).executes(ctx -> {
-                String message = ctx.getArgument("message", String.class).replace("&", "\247");
-                return createHolo(message, mc.player.getX(), mc.player.getY(), mc.player.getZ());
-            }))
             .then(argument("pos", anticope.rejects.arguments.ClientPosArgumentType.pos())
                 .then(argument("message", StringArgumentType.greedyString()).executes(ctx -> {
                     String message = ctx.getArgument("message", String.class).replace("&", "\247");
                     net.minecraft.world.phys.Vec3 pos = anticope.rejects.arguments.ClientPosArgumentType.getPos(ctx, "pos");
                     return createHolo(message, pos.x, pos.y, pos.z);
                 })))
+            .then(argument("message", StringArgumentType.greedyString()).executes(ctx -> {
+                String message = ctx.getArgument("message", String.class).replace("&", "\247");
+                return createHolo(message, mc.player.getX(), mc.player.getY(), mc.player.getZ());
+            }))
         );
 
         builder.then(literal("bossbar").then(argument("message", StringArgumentType.greedyString()).executes(ctx -> {
