@@ -95,15 +95,13 @@ public class SoundLocator extends Module {
 
     @EventHandler
     private void onTick(TickEvent.Pre event) {
-        Iterator<Integer> iterator = delay.iterator();
-
-        while (iterator.hasNext()) {
-            int time = iterator.next();
+        for (int i = delay.size() - 1; i >= 0; i--) {
+            int time = delay.get(i);
             if (time <= 0) {
-                iterator.remove();
-                renderPos.remove(0);
+                delay.remove(i);
+                renderPos.remove(i);
             } else {
-                delay.set(delay.indexOf(time), time - 1);
+                delay.set(i, time - 1);
             }
         }
     }

@@ -84,7 +84,7 @@ public class GiveUtils {
     static {
         ENTITY_PRESETS.forEach((preset) -> {
             PRESETS.put(preset.getLeft(), (preview) -> {
-                if (preview) preset.getMiddle().getDefaultInstance();
+                if (preview) return preset.getMiddle().getDefaultInstance();
                 ItemStack item = preset.getMiddle().getDefaultInstance();
                 try {
                     CompoundTag compound = TagParser.parseCompoundFully(preset.getRight());
@@ -99,7 +99,7 @@ public class GiveUtils {
 
         BLOCK_PRESETS.forEach((preset) -> {
             PRESETS.put(preset.getLeft(), (preview) -> {
-                if (preview) preset.getMiddle().getDefaultInstance();
+                if (preview) return preset.getMiddle().getDefaultInstance();
                 ItemStack item = preset.getMiddle().getDefaultInstance();
                 try {
                     CompoundTag compound = TagParser.parseCompoundFully(preset.getRight());
@@ -114,7 +114,7 @@ public class GiveUtils {
 
         // TODO update
         PRESETS.put("force_op", (preview) -> {
-            if (preview) Items.SPIDER_SPAWN_EGG.getDefaultInstance();
+            if (preview) return Items.SPIDER_SPAWN_EGG.getDefaultInstance();
             ItemStack item = Items.SPIDER_SPAWN_EGG.getDefaultInstance();
             String nick = mc.player.getName().getString();
 
@@ -128,7 +128,7 @@ public class GiveUtils {
 
         // Thanks wurst !
         PRESETS.put("troll_potion", (preview) -> {
-            if (preview) Items.LINGERING_POTION.getDefaultInstance();
+            if (preview) return Items.LINGERING_POTION.getDefaultInstance();
             ItemStack stack = Items.LINGERING_POTION.getDefaultInstance();
             ArrayList<MobEffectInstance> effects = new ArrayList<>();
             for(int i = 1; i <= 31; i++)
@@ -148,9 +148,10 @@ public class GiveUtils {
         });
 
         PRESETS.put("32k", (preview) -> {
+            if (preview || mc.level == null) return Items.DIAMOND_SWORD.getDefaultInstance();
             enchantmentRegistry = mc.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
 
-            if (preview || enchantmentRegistry == null) return Items.DIAMOND_SWORD.getDefaultInstance();
+            if (enchantmentRegistry == null) return Items.DIAMOND_SWORD.getDefaultInstance();
             ItemStack stack = Items.DIAMOND_SWORD.getDefaultInstance();
 
             stack.update(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY, component -> {

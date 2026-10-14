@@ -113,8 +113,8 @@ public class Painter extends Module {
                 BlockUtils.place(blockPos, findItemResult, rotate.get(), -100, false);
                 placed++;
 
-                // Delay 0
-                if (delay.get() != 0 && placed >= bpt.get()) break;
+                // Blocks per tick
+                if (placed >= bpt.get()) break;
             }
         }
     }
@@ -129,12 +129,12 @@ public class Painter extends Module {
                 !mc.level.getBlockState(blockPos.below()).canBeReplaced()) return false;
     
     
-        boolean north = true;
-        boolean south = true;
-        boolean east = true;
-        boolean west = true;
-        boolean up = true;
-        boolean bottom = true;
+        boolean north = false;
+        boolean south = false;
+        boolean east = false;
+        boolean west = false;
+        boolean up = false;
+        boolean bottom = false;
         BlockState northState = mc.level.getBlockState(blockPos.north());
         BlockState southState = mc.level.getBlockState(blockPos.south());
         BlockState eastState = mc.level.getBlockState(blockPos.east());
@@ -144,21 +144,20 @@ public class Painter extends Module {
     
         // Top surface
         if (topSurfaces.get()) {
-            if (upState.canBeReplaced() || upState.getBlock() == useBlock) up = false;
+            if (!upState.canBeReplaced() && upState.getBlock() != useBlock) up = true;
         }
         
         // Side surfaces
         if (sideSurfaces.get()) {
-            
-            if (northState.canBeReplaced() || northState.getBlock() == useBlock) north = false;
-            if (southState.canBeReplaced() || southState.getBlock() == useBlock) south = false;
-            if (eastState.canBeReplaced() || eastState.getBlock() == useBlock) east = false;
-            if (westState.canBeReplaced() || westState.getBlock() == useBlock) west = false;
+            if (!northState.canBeReplaced() && northState.getBlock() != useBlock) north = true;
+            if (!southState.canBeReplaced() && southState.getBlock() != useBlock) south = true;
+            if (!eastState.canBeReplaced() && eastState.getBlock() != useBlock) east = true;
+            if (!westState.canBeReplaced() && westState.getBlock() != useBlock) west = true;
         }
         
         // Bottom surface
         if (bottomSurfaces.get()) {
-            if (bottomState.canBeReplaced() || bottomState.getBlock() == useBlock) bottom = false;
+            if (!bottomState.canBeReplaced() && bottomState.getBlock() != useBlock) bottom = true;
         }
     
         return north || south || east || west || up || bottom;

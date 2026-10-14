@@ -12,10 +12,9 @@ import meteordevelopment.meteorclient.systems.modules.combat.KillAura;
 import meteordevelopment.meteorclient.utils.misc.input.KeyAction;
 import meteordevelopment.meteorclient.utils.player.InvUtils;
 import meteordevelopment.orbit.EventHandler;
-import net.minecraft.network.protocol.game.ServerboundInteractPacket;
+import net.minecraft.network.protocol.game.ServerboundAttackPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.network.protocol.game.ServerboundSwingPacket;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.AxeItem;
@@ -87,7 +86,7 @@ public class ShieldBypass extends Module {
 
             mc.getConnection().send(new ServerboundMovePlayerPacket.Pos(newPos.x(), newPos.y(), newPos.z(), true, false));
 
-            mc.getConnection().send(new ServerboundInteractPacket(e.getId(), InteractionHand.MAIN_HAND, e.position(), mc.player.isShiftKeyDown()));
+            mc.getConnection().send(new ServerboundAttackPacket(e.getId()));
             mc.getConnection().send(new ServerboundSwingPacket(mc.player.getUsedItemHand()));
             mc.player.resetOnlyAttackStrengthTicker();
 

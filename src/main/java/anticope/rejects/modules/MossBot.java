@@ -61,8 +61,8 @@ public class MossBot extends Module {
                 .filter(b -> mc.player.getEyePosition().distanceTo(Vec3.atCenterOf(b)) <= range.get() && !mossMap.containsKey(b))
                 .map(b -> Pair.of(b.immutable(), getMossSpots(b)))
                 .filter(p -> p.getRight() > 10)
-                .map(Pair::getLeft)
-                .max(Comparator.naturalOrder()).orElse(null);
+                .max(Comparator.comparingInt(Pair::getRight))
+                .map(Pair::getLeft).orElse(null);
 
         if (bestBlock != null) {
             if (!mc.level.isEmptyBlock(bestBlock.above())) {

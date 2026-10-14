@@ -40,7 +40,9 @@ public class GiveCommand extends Command {
             ItemStack item = new ItemStack(Items.STRIDER_SPAWN_EGG);
             CompoundTag ct = new CompoundTag();
 
+            EntityType<?> entityType;
             if (inHand.getItem() instanceof BlockItem) {
+                entityType = EntityType.FALLING_BLOCK;
                 ct.putInt("Time", 1);
                 ct.putString("id", "minecraft:falling_block");
                 ct.put("BlockState", new CompoundTag());
@@ -49,6 +51,7 @@ public class GiveCommand extends Command {
                 );
 
             } else {
+                entityType = EntityType.ITEM;
                 ct.putString("id", "minecraft:item");
                 CompoundTag itemTag = new CompoundTag();
                 itemTag.putString("id", BuiltInRegistries.ITEM.getKey(inHand.getItem()).toString());
@@ -56,12 +59,10 @@ public class GiveCommand extends Command {
 
                 ct.put("Item", itemTag);
             }
-            CompoundTag t = new CompoundTag();
-            t.put("EntityTag", ct);
 
             var changes = DataComponentPatch.builder()
                     .set(DataComponents.CUSTOM_NAME, inHand.getHoverName())
-                    .set(DataComponents.CUSTOM_DATA, CustomData.of(t))
+                    .set(DataComponents.ENTITY_DATA, TypedEntityData.of(entityType, ct))
                     .build();
 
             item.applyComponentsAndValidate(changes);
