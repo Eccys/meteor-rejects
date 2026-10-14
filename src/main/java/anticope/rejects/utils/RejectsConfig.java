@@ -59,7 +59,7 @@ public class RejectsConfig extends System<RejectsConfig> {
     public List<Module> getHiddenModules() {
         Modules modules = Modules.get();
         if (modules == null) return List.of();
-        return hiddenModules.stream().map(modules::get).collect(Collectors.toList());
+        return hiddenModules.stream().map(modules::get).filter(java.util.Objects::nonNull).collect(Collectors.toList());
     }
 
     @Override

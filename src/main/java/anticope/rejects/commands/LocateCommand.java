@@ -40,38 +40,41 @@ public class LocateCommand extends Command {
 				.then(argument("feature", EnumArgumentType.enumArgument(Cubiomes.StructureType.Village)).executes(ctx -> {
 					Cubiomes.StructureType feature = EnumArgumentType.getEnum(ctx, "feature", Cubiomes.StructureType.Village);
 					BlockPos playerPos = mc.player.blockPosition();
-					long seed = Seeds.get().getSeed().seed;
-					MCVersion version = Seeds.get().getSeed().version;
+					anticope.rejects.utils.seeds.Seed currentSeed = Seeds.get().getSeed();
 					Cubiomes.MCVersion cubiomesVersion = null;
-					if (version.isNewerOrEqualTo(MCVersion.v1_20)) {
-						cubiomesVersion = Cubiomes.MCVersion.MC_1_20;
-					} else if (version.isNewerOrEqualTo(MCVersion.v1_19)) {
-						switch (version) {
-							case v1_19:
-							case v1_19_1:
-								cubiomesVersion = Cubiomes.MCVersion.MC_1_19;
-								break;
-							case v1_19_2:
-							case v1_19_3:
-							case v1_19_4:
-								cubiomesVersion = Cubiomes.MCVersion.MC_1_19_2;
-								break;
-							default:
-								throw new IllegalStateException("Unexpected value: " + version);
+					if (currentSeed != null && currentSeed.version != null) {
+						MCVersion version = currentSeed.version;
+						if (version.isNewerOrEqualTo(MCVersion.v1_20)) {
+							cubiomesVersion = Cubiomes.MCVersion.MC_1_20;
+						} else if (version.isNewerOrEqualTo(MCVersion.v1_19)) {
+							switch (version) {
+								case v1_19:
+								case v1_19_1:
+									cubiomesVersion = Cubiomes.MCVersion.MC_1_19;
+									break;
+								case v1_19_2:
+								case v1_19_3:
+								case v1_19_4:
+									cubiomesVersion = Cubiomes.MCVersion.MC_1_19_2;
+									break;
+								default:
+									throw new IllegalStateException("Unexpected value: " + version);
+							}
+						} else if (version.isNewerOrEqualTo(MCVersion.v1_18)) {
+							cubiomesVersion = Cubiomes.MCVersion.MC_1_18;
 						}
-					} else if (version.isNewerOrEqualTo(MCVersion.v1_18)) {
-						cubiomesVersion = Cubiomes.MCVersion.MC_1_18;
 					}
 					Pos pos = null;
 					if (cubiomesVersion != null) {
-						pos = Cubiomes.GetNearestStructure(feature, playerPos.getX(), playerPos.getZ(), seed,
+						pos = Cubiomes.GetNearestStructure(feature, playerPos.getX(), playerPos.getZ(), currentSeed.seed,
 								cubiomesVersion);
 					} else {
 						BlockPos bpos = WorldGenUtils.locateFeature(feature, playerPos);
-						pos = new Pos();
-						pos.x = bpos.getX();
-						pos.z = bpos.getZ();
-
+						if (bpos != null) {
+							pos = new Pos();
+							pos.x = bpos.getX();
+							pos.z = bpos.getZ();
+						}
 					}
 					if (pos != null) {
 						// Calculate distance

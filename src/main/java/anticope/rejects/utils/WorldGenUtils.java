@@ -18,6 +18,7 @@ import meteordevelopment.meteorclient.utils.player.ChatUtils;
 import meteordevelopment.meteorclient.utils.player.PlayerUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.golem.IronGolem;
@@ -148,6 +149,7 @@ public class WorldGenUtils {
 					case Desert_Pyramid -> Feature.desert_pyramid;
 					default -> null;
 				};
+        if (feature == null) return null;
         Seed seed = Seeds.get().getSeed();
         BlockPos pos = null;
         if (!checkIfInDimension(getDimension(feature))) {
@@ -355,11 +357,12 @@ public class WorldGenUtils {
     private static boolean isValidMap(Feature feature, ItemStack stack) {
         if (stack.getComponents().isEmpty()) return false;
         if (!stack.getComponents().has(DataComponents.MAP_DECORATIONS)) return false;
-        MapDecorations displayTag = stack.getPrototype().get(DataComponents.MAP_DECORATIONS);
+        MapDecorations displayTag = stack.get(DataComponents.MAP_DECORATIONS);
+        if (displayTag == null) return false;
 
-        if (!displayTag.toString().contains("Name")) return false;
-        String nameTag = String.valueOf(displayTag.decorations().get("Name"));
-        if (!nameTag.contains("translate")) return false;
+        Component itemName = stack.get(DataComponents.ITEM_NAME);
+        Component customName = stack.get(DataComponents.CUSTOM_NAME);
+        String nameTag = (itemName != null ? itemName.toString() : "") + (customName != null ? customName.toString() : "");
 
         if (feature == Feature.buried_treasure) {
             return nameTag.contains("filled_map.buried_treasure");
@@ -373,12 +376,11 @@ public class WorldGenUtils {
 
     private static BlockPos getMapMarker(ItemStack stack) {
         if (stack.getComponents().isEmpty()) return null;
-        if (!stack.getPrototype().has(DataComponents.MAP_DECORATIONS)) return null;
+        if (!stack.getComponents().has(DataComponents.MAP_DECORATIONS)) return null;
 
         MapDecorations decorationsTag = stack.get(DataComponents.MAP_DECORATIONS);
-        if (decorationsTag.decorations().isEmpty()) return null;
-        MapDecorations.Entry iconTag = decorationsTag.decorations().get(0);
-        // check this
+        if (decorationsTag == null || decorationsTag.decorations().isEmpty()) return null;
+        MapDecorations.Entry iconTag = decorationsTag.decorations().values().iterator().next();
         return new BlockPos(
             (int)iconTag.x(),
             0,
