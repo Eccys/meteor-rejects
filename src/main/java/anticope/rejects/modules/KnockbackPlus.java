@@ -9,13 +9,10 @@ import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import meteordevelopment.meteorclient.systems.modules.combat.KillAura;
 import meteordevelopment.orbit.EventHandler;
-import net.minecraft.network.protocol.game.ServerboundInteractPacket;
+import net.minecraft.network.protocol.game.ServerboundAttackPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.phys.Vec3;
-import org.jspecify.annotations.NonNull;
 
 public class KnockbackPlus extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
@@ -33,15 +30,13 @@ public class KnockbackPlus extends Module {
 
     @EventHandler
     private void onSendPacket(PacketEvent.Send event) {
-        if (event.packet instanceof ServerboundInteractPacket packet) {
-            if (!packet.usingSecondaryAction()) {
-                Entity entity = mc.level != null ? mc.level.getEntity(packet.entityId()) : null;
-                if (!(entity instanceof LivingEntity) || (entity != Modules.get().get(KillAura.class).getTarget() && ka.get()))
-                    return;
+        if (event.packet instanceof ServerboundAttackPacket packet) {
+            Entity entity = mc.level != null ? mc.level.getEntity(packet.entityId()) : null;
+            if (!(entity instanceof LivingEntity) || (entity != Modules.get().get(KillAura.class).getTarget() && ka.get()))
+                return;
 
-                assert mc.player != null;
-                mc.player.connection.send(new ServerboundPlayerCommandPacket(mc.player, ServerboundPlayerCommandPacket.Action.START_SPRINTING));
-            }
+            assert mc.player != null;
+            mc.player.connection.send(new ServerboundPlayerCommandPacket(mc.player, ServerboundPlayerCommandPacket.Action.START_SPRINTING));
         }
     }
 }

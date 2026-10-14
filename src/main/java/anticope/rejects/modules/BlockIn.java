@@ -157,6 +157,6 @@ public class BlockIn extends Module {
         Block block = ((BlockItem) itemStack.getItem()).getBlock();
         
         if (!Block.isShapeFullBlock(block.defaultBlockState().getCollisionShape(mc.level, pos))) return false;
-        return !(block instanceof FallingBlock) || !FallingBlock.isFree(mc.level.getBlockState(pos));
+        return !(block instanceof FallingBlock) || !FallingBlock.isFree(mc.level.getBlockState(pos.below()));
     }
 }

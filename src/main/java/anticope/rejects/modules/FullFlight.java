@@ -114,7 +114,7 @@ public class FullFlight extends Module {
 
     @EventHandler
     private void onSendPacket(PacketEvent.Send event) {
-        if (mc.player.getVehicle() == null || !(event.packet instanceof ServerboundMovePlayerPacket packet) || antiKickMode.get() != AntiKickMode.PaperNew)
+        if (mc.player.getVehicle() != null || !(event.packet instanceof ServerboundMovePlayerPacket packet) || antiKickMode.get() != AntiKickMode.PaperNew)
             return;
 
         double currentY = packet.getY(Double.MAX_VALUE);

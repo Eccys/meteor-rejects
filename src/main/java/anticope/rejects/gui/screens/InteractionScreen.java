@@ -180,28 +180,29 @@ public class InteractionScreen extends Screen {
             }
         }
         // Check for saddle in body slot (horses, pigs, striders, etc.)
-        LivingEntity a = (LivingEntity) e;
-        ItemStack bodyStack = a.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.BODY);
-        if (bodyStack != null && !bodyStack.isEmpty()) {
-            stack[index[0]] = bodyStack;
-            index[0]++;
-        }
-
-        // Hand items
-        for (net.minecraft.world.entity.EquipmentSlot slot : new net.minecraft.world.entity.EquipmentSlot[]{net.minecraft.world.entity.EquipmentSlot.MAINHAND, net.minecraft.world.entity.EquipmentSlot.OFFHAND}) {
-            ItemStack itemStack = a.getItemBySlot(slot);
-            if (itemStack != null && !itemStack.isEmpty()) {
-                stack[index[0]] = itemStack;
+        if (e instanceof LivingEntity a) {
+            ItemStack bodyStack = a.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.BODY);
+            if (bodyStack != null && !bodyStack.isEmpty()) {
+                stack[index[0]] = bodyStack;
                 index[0]++;
             }
-        }
 
-        // Armor items
-        for (net.minecraft.world.entity.EquipmentSlot slot : new net.minecraft.world.entity.EquipmentSlot[]{net.minecraft.world.entity.EquipmentSlot.FEET, net.minecraft.world.entity.EquipmentSlot.LEGS, net.minecraft.world.entity.EquipmentSlot.CHEST, net.minecraft.world.entity.EquipmentSlot.HEAD}) {
-            ItemStack itemStack = a.getItemBySlot(slot);
-            if (itemStack != null && !itemStack.isEmpty()) {
-                stack[index[0]] = itemStack;
-                index[0]++;
+            // Hand items
+            for (net.minecraft.world.entity.EquipmentSlot slot : new net.minecraft.world.entity.EquipmentSlot[]{net.minecraft.world.entity.EquipmentSlot.MAINHAND, net.minecraft.world.entity.EquipmentSlot.OFFHAND}) {
+                ItemStack itemStack = a.getItemBySlot(slot);
+                if (itemStack != null && !itemStack.isEmpty()) {
+                    stack[index[0]] = itemStack;
+                    index[0]++;
+                }
+            }
+
+            // Armor items
+            for (net.minecraft.world.entity.EquipmentSlot slot : new net.minecraft.world.entity.EquipmentSlot[]{net.minecraft.world.entity.EquipmentSlot.FEET, net.minecraft.world.entity.EquipmentSlot.LEGS, net.minecraft.world.entity.EquipmentSlot.CHEST, net.minecraft.world.entity.EquipmentSlot.HEAD}) {
+                ItemStack itemStack = a.getItemBySlot(slot);
+                if (itemStack != null && !itemStack.isEmpty()) {
+                    stack[index[0]] = itemStack;
+                    index[0]++;
+                }
             }
         }
 

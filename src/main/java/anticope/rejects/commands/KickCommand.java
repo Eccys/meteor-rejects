@@ -7,9 +7,8 @@ import meteordevelopment.meteorclient.utils.player.ChatUtils;
 import net.minecraft.client.multiplayer.ClientSuggestionProvider;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.common.ClientboundDisconnectPacket;
-import net.minecraft.network.protocol.game.ServerboundInteractPacket;
+import net.minecraft.network.protocol.game.ServerboundAttackPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
-import net.minecraft.world.InteractionHand;
 import org.apache.commons.lang3.SystemUtils;
 
 public class KickCommand extends Command {
@@ -49,7 +48,7 @@ public class KickCommand extends Command {
             return SINGLE_SUCCESS;
         }));
         builder.then(literal("hurt").executes(ctx -> {
-            mc.player.connection.send(new ServerboundInteractPacket(mc.player.getId(), InteractionHand.MAIN_HAND, mc.player.position(), mc.player.isShiftKeyDown()));
+            mc.player.connection.send(new ServerboundAttackPacket(mc.player.getId()));
             return SINGLE_SUCCESS;
         }));
         builder.then(literal("chat").executes(ctx -> {
