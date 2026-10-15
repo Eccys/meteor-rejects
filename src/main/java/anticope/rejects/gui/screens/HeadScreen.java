@@ -85,27 +85,31 @@ public class HeadScreen extends WindowScreen {
                 } catch (Exception e) { }
             });
 
-            WTable t = theme.table();
-            for (ItemStack head : heads) {
-                t.add(theme.item(head));
-                t.add(theme.label(head.getHoverName().getString()));
-                WButton give = t.add(theme.button("Give")).widget();
-                give.action = () -> {
-                    try {
-                        GiveUtils.giveItem(head);
-                    } catch (CommandSyntaxException e) {
-                        ChatUtils.errorPrefix("Heads", e.getMessage());
-                    }
-                };
-                WButton equip = t.add(theme.button("Equip")).widget();
-                equip.tooltip = "Equip client-side.";
-                equip.action = () -> {
-                    mc.player.getInventory().setItem(39, head); // 39 is helmet slot (36 + 3)
-                };
-                t.row();
-            }
-            set();
-            add(t).expandX().minWidth(400).widget();
+            mc.execute(() -> {
+                WTable t = theme.table();
+                for (ItemStack head : heads) {
+                    t.add(theme.item(head));
+                    t.add(theme.label(head.getHoverName().getString()));
+                    WButton give = t.add(theme.button("Give")).widget();
+                    give.action = () -> {
+                        try {
+                            GiveUtils.giveItem(head);
+                        } catch (CommandSyntaxException e) {
+                            ChatUtils.errorPrefix("Heads", e.getMessage());
+                        }
+                    };
+                    WButton equip = t.add(theme.button("Equip")).widget();
+                    equip.tooltip = "Equip client-side.";
+                    equip.action = () -> {
+                        if (mc.player != null) {
+                            mc.player.getInventory().setItem(39, head); // 39 is helmet slot (36 + 3)
+                        }
+                    };
+                    t.row();
+                }
+                set();
+                add(t).expandX().minWidth(400).widget();
+            });
         });
     }
 

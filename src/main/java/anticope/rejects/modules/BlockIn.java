@@ -67,11 +67,14 @@ public class BlockIn extends Module {
     
     @Override
     public void onActivate() {
-        sY = mc.player.getY();
+        if (mc.player != null) {
+            sY = mc.player.getY();
+        }
     }
     
     @EventHandler
     private void onPreTick(TickEvent.Pre event) {
+        if (mc.player == null || mc.level == null) return;
         if (mc.player.onGround() && mc.player.getY()>Math.floor(mc.player.getY()+0.2)) mc.options.keyShift.setDown(true);
         if (return_ && mc.options.keyShift.isDown()) mc.options.keyShift.setDown(false);
         if (center.get()) {

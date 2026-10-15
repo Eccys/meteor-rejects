@@ -220,13 +220,13 @@ public class OreSim extends Module {
     }
 
     private void doMathOnChunk(ChunkAccess chunk) {
-
+        if (chunk == null) return;
         var chunkPos = chunk.getPos();
         long chunkKey = chunkPos.pack();
 
         ClientLevel world = mc.level;
 
-        if (chunkRenderers.containsKey(chunkKey) || world == null) {
+        if (chunkRenderers.containsKey(chunkKey) || world == null || worldSeed == null || oreConfig == null) {
             return;
         }
 
@@ -236,7 +236,7 @@ public class OreSim extends Module {
             if (chunkxx == null) return;
 
             for(LevelChunkSection chunkSection : chunkxx.getSections()) {
-                chunkSection.getBiomes().getAll(entry -> biomes.add(entry.unwrapKey().get()));
+                chunkSection.getBiomes().getAll(entry -> entry.unwrapKey().ifPresent(biomes::add));
             }
         });
         Set<Ore> oreSet = biomes.stream().flatMap(b -> getDefaultOres(b).stream()).collect(Collectors.toSet());
@@ -250,7 +250,7 @@ public class OreSim extends Module {
 
         for (Ore ore : oreSet) {
 
-            HashSet<Vec3> ores = new HashSet<>();
+            Set<Vec3> ores = ConcurrentHashMap.newKeySet();
 
             random.setFeatureSeed(populationSeed, ore.index, ore.step);
 
@@ -267,9 +267,9 @@ public class OreSim extends Module {
                 int y = ore.heightProvider.sample(random, ore.heightContext);
                 BlockPos origin = new BlockPos(x,y,z);
 
-                ResourceKey<Biome> biome = chunk.getNoiseBiome(QuartPos.fromBlock(x), QuartPos.fromBlock(y), QuartPos.fromBlock(z)).unwrapKey().get();
+                var biomeKeyOpt = chunk.getNoiseBiome(QuartPos.fromBlock(x), QuartPos.fromBlock(y), QuartPos.fromBlock(z)).unwrapKey();
 
-                if (!getDefaultOres(biome).contains(ore)) {
+                if (biomeKeyOpt.isEmpty() || !getDefaultOres(biomeKeyOpt.get()).contains(ore)) {
                     continue;
                 }
 
@@ -287,6 +287,7 @@ public class OreSim extends Module {
     }
 
     private List<Ore> getDefaultOres(ResourceKey<Biome> biomeRegistryKey) {
+        if (oreConfig == null) return Collections.emptyList();
         if (oreConfig.containsKey(biomeRegistryKey)) {
             return oreConfig.get(biomeRegistryKey);
         } else {

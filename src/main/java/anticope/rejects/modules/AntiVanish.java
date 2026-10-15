@@ -44,10 +44,10 @@ public class AntiVanish extends Module {
     );
 
     private Map<UUID, String> playerCache = new HashMap<>();
-    private final List<String> messageCache = new ArrayList<>();
+    private final List<String> messageCache = new java.util.concurrent.CopyOnWriteArrayList<>();
 
     private final Random random = new Random();
-    private final List<Integer> completionIDs = new ArrayList<>();
+    private final List<Integer> completionIDs = new java.util.concurrent.CopyOnWriteArrayList<>();
     private List<String> completionPlayerCache = new ArrayList<>();
 
     private int timer = 0;
@@ -119,7 +119,9 @@ public class AntiVanish extends Module {
 
     @EventHandler
     private void onReceiveMessage(ReceiveMessageEvent event) {
-        messageCache.add(event.getMessage().getString());
+        if (event.getMessage() != null) {
+            messageCache.add(event.getMessage().getString());
+        }
     }
 
     @EventHandler
@@ -151,6 +153,9 @@ public class AntiVanish extends Module {
             }
             case RealJoinMessage -> {
                 int id = random.nextInt(200);
+                if (completionIDs.size() >= 64) {
+                    completionIDs.removeFirst();
+                }
                 completionIDs.add(id);
                 mc.getConnection().send(new ServerboundCommandSuggestionPacket(id, command.get() + " "));
             }

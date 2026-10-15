@@ -55,8 +55,7 @@ public class ColorSigns extends Module {
             List<String> newPages = packet.pages().stream().map(text ->
                     text.replaceAll("(?i)&([0-9A-Z])", "§$1")).toList();
             // BookUpdateC2SPacket.pages is final, so we need to create a new packet
-            if (!packet.pages().equals(newPages)) {
-                assert mc.getConnection() != null;
+            if (!packet.pages().equals(newPages) && mc.getConnection() != null) {
                 mc.getConnection().send(new ServerboundEditBookPacket(
                         packet.slot(), newPages, packet.title()));
                 event.cancel();

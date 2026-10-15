@@ -68,13 +68,17 @@ public class AutoEnchant extends meteordevelopment.meteorclient.systems.modules.
     private void autoEnchant() {
         if (mc.player == null || !(mc.player.containerMenu instanceof EnchantmentMenu handler))
             return;
-        if (mc.player.experienceLevel < 30) {
+        if (mc.player.experienceLevel < 30 && !mc.player.getAbilities().instabuild) {
             info("You don't have enough experience levels");
             return;
         }
         while (getEmptySlotCount(handler) > 2 || drop.get()) {
             if (mc.player == null || mc.gameMode == null || !(mc.player.containerMenu instanceof EnchantmentMenu)) {
                 info("Enchanting table is closed.");
+                break;
+            }
+            if (mc.player.experienceLevel < 30 && !mc.player.getAbilities().instabuild) {
+                info("You don't have enough experience levels");
                 break;
             }
             if (handler.getGoldCount() < level.get() && !fillLapisItem()) {

@@ -41,6 +41,7 @@ public class FillCommand extends Command {
     }
 
     private void fillArea(Vec3 fromPos, Vec3 toPos, BlockState blockState, BlockState filterBlock) {
+        if (mc.level == null) return;
         MinMaxCoords coords = getMinMaxCoords(fromPos, toPos);
 
         for (int x = coords.minX; x <= coords.maxX; x++) {

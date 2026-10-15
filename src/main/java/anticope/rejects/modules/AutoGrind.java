@@ -53,22 +53,28 @@ public class AutoGrind extends Module {
 
     @EventHandler
     private void onOpenScreen(OpenScreenEvent event) {
-        if (!(mc.player.containerMenu instanceof GrindstoneMenu))
+        if (mc.player == null || !(mc.player.containerMenu instanceof GrindstoneMenu))
             return;
 
         MeteorExecutor.execute(() -> {
-            for (int i = 0; i < mc.player.getInventory().getContainerSize(); i++) {
+            for (int i = 0; i < 36; i++) {
+                if (mc.player == null || !(mc.player.containerMenu instanceof GrindstoneMenu)) break;
                 if (canGrind(mc.player.getInventory().getItem(i))) {
                     try {
                         Thread.sleep(delay.get());
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        Thread.currentThread().interrupt();
+                        break;
                     }
 
-                    if (mc.screen == null) break;
+                    if (mc.screen == null || mc.player == null || !(mc.player.containerMenu instanceof GrindstoneMenu)) break;
 
-                    InvUtils.shiftClick().slot(i);
-                    InvUtils.move().fromId(2).to(i);
+                    final int slotIndex = i;
+                    mc.execute(() -> {
+                        if (mc.screen == null || mc.player == null || !(mc.player.containerMenu instanceof GrindstoneMenu)) return;
+                        InvUtils.shiftClick().slot(slotIndex);
+                        InvUtils.move().fromId(2).to(slotIndex);
+                    });
                 }
             }
         });

@@ -91,6 +91,7 @@ public class Painter extends Module {
     
     @EventHandler
     private void onTick(TickEvent.Post event) {
+        if (mc.player == null || mc.level == null) return;
         // Tick delay
         if (delay.get() != 0 && ticksWaited < delay.get() - 1) {
             ticksWaited++;

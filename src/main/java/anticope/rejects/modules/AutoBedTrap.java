@@ -84,8 +84,15 @@ public class AutoBedTrap extends Module {
 
     @EventHandler
     private void onTickPost(TickEvent.Post event) {
+        if (mc.level == null || mc.player == null) {
+            for (BlockPos.MutableBlockPos blockPos : blocks) blockPosPool.free(blockPos);
+            blocks.clear();
+            return;
+        }
+        cap = 0;
         boolean noBlocks = false;
         for (BlockPos blockPos : blocks) {
+            if (cap >= bpt.get()) break;
             if (!placeTickAround(blockPos)) {
                 noBlocks = true;
                 break;
@@ -103,7 +110,6 @@ public class AutoBedTrap extends Module {
                 block.east(), block.below()}) {
 
             if (cap >= bpt.get()) {
-                cap = 0;
                 return true;
             }
 
@@ -127,7 +133,6 @@ public class AutoBedTrap extends Module {
                 }
             }
         }
-        cap = 0;
         return true;
     }
 }

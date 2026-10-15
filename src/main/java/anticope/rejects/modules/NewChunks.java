@@ -111,11 +111,12 @@ public class NewChunks extends Module {
 
 	@EventHandler
 	private void onRender(Render3DEvent event) {
+		if (mc.getCameraEntity() == null) return;
 		if (newChunksLineColor.get().a > 5 || newChunksSideColor.get().a > 5) {
 			synchronized (newChunks) {
 				for (ChunkPos c : newChunks) {
 					if (mc.getCameraEntity().blockPosition().closerThan(c.getWorldPosition(), 1024)) {
-						render(new AABB(Vec3.atLowerCornerOf(c.getWorldPosition()), Vec3.atLowerCornerOf(c.getWorldPosition().offset(16, renderHeight.get(), 16))), newChunksSideColor.get(), newChunksLineColor.get(), shapeMode.get(), event);
+						render(new AABB(Vec3.atLowerCornerOf(c.getWorldPosition().atY(renderHeight.get())), Vec3.atLowerCornerOf(c.getWorldPosition().atY(renderHeight.get()).offset(16, 0, 16))), newChunksSideColor.get(), newChunksLineColor.get(), shapeMode.get(), event);
 					}
 				}
 			}
@@ -125,7 +126,7 @@ public class NewChunks extends Module {
 			synchronized (oldChunks) {
 				for (ChunkPos c : oldChunks) {
 					if (mc.getCameraEntity().blockPosition().closerThan(c.getWorldPosition(), 1024)) {
-						render(new AABB(Vec3.atLowerCornerOf(c.getWorldPosition()), Vec3.atLowerCornerOf(c.getWorldPosition().offset(16, renderHeight.get(), 16))), oldChunksSideColor.get(), oldChunksLineColor.get(), shapeMode.get(), event);
+						render(new AABB(Vec3.atLowerCornerOf(c.getWorldPosition().atY(renderHeight.get())), Vec3.atLowerCornerOf(c.getWorldPosition().atY(renderHeight.get()).offset(16, 0, 16))), oldChunksSideColor.get(), oldChunksLineColor.get(), shapeMode.get(), event);
 					}
 				}
 			}
@@ -139,6 +140,7 @@ public class NewChunks extends Module {
 
 	@EventHandler
 	private void onReadPacket(PacketEvent.Receive event) {
+		if (mc.level == null) return;
 		if (event.packet instanceof ClientboundSectionBlocksUpdatePacket) {
 			ClientboundSectionBlocksUpdatePacket packet = (ClientboundSectionBlocksUpdatePacket) event.packet;
 

@@ -77,9 +77,9 @@ public class AutoRename extends Module {
 
     @EventHandler
     private void onTick(TickEvent.Post ignoredEvent) {
-        if (mc.gameMode == null) return;
+        if (mc.player == null || mc.gameMode == null) return;
         if (items.get().isEmpty() && containerType.get() == ContainerType.NONE) return;
-        if (!(mc.player.containerMenu instanceof AnvilMenu)) return;
+        if (!(mc.player.containerMenu instanceof AnvilMenu anvilMenu)) return;
 
         if (delayLeft > 0) {
             delayLeft--;
@@ -88,14 +88,15 @@ public class AutoRename extends Module {
             delayLeft = delay.get();
         }
 
-        var slot0 = mc.player.containerMenu.getSlot(0);
-        var slot1 = mc.player.containerMenu.getSlot(1);
-        var slot2 = mc.player.containerMenu.getSlot(2);
+        var slot0 = anvilMenu.getSlot(0);
+        var slot1 = anvilMenu.getSlot(1);
+        var slot2 = anvilMenu.getSlot(2);
         if (slot1.hasItem()) {
             return; // second anvil slot occupied
         }
         if (slot2.hasItem()) {
-            if (mc.player.experienceLevel >= 1) {
+            int cost = anvilMenu.getCost();
+            if (cost > 0 && (mc.player.experienceLevel >= cost || mc.player.getAbilities().instabuild)) {
                 extractNamed();
             }
         } else {
