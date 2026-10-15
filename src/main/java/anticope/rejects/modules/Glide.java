@@ -50,6 +50,7 @@ public class Glide extends Module {
     @EventHandler
     private void onTick(TickEvent.Post event) {
         LocalPlayer player = mc.player;
+        if (player == null || mc.level == null) return;
         Vec3 v = player.getDeltaMovement();
 
         if (player.onGround() || player.isInWater() || player.isInLava() || player.onClimbable() || v.y >= 0)

@@ -13,12 +13,14 @@ public class SetVelocityCommand extends Command {
     @Override
     public void build(LiteralArgumentBuilder<ClientSuggestionProvider> builder) {
         builder.then(argument("y", DoubleArgumentType.doubleArg()).executes(ctx -> {
+            if (mc.player == null) return SINGLE_SUCCESS;
             var currentVelocity = mc.player.getDeltaMovement();
             mc.player.setDeltaMovement(currentVelocity.x, DoubleArgumentType.getDouble(ctx, "y"), currentVelocity.z);
             return SINGLE_SUCCESS;
         }));
 
         builder.then(argument("x", DoubleArgumentType.doubleArg()).then(argument("z", DoubleArgumentType.doubleArg()).executes(ctx -> {
+            if (mc.player == null) return SINGLE_SUCCESS;
             double x = DoubleArgumentType.getDouble(ctx, "x");
             double z = DoubleArgumentType.getDouble(ctx, "z");
             mc.player.setDeltaMovement(x, mc.player.getDeltaMovement().y, z);
@@ -26,6 +28,7 @@ public class SetVelocityCommand extends Command {
         })));
 
         builder.then(argument("x", DoubleArgumentType.doubleArg()).then(argument("y", DoubleArgumentType.doubleArg()).then(argument("z", DoubleArgumentType.doubleArg()).executes(ctx -> {
+            if (mc.player == null) return SINGLE_SUCCESS;
             double x = DoubleArgumentType.getDouble(ctx, "x");
             double y = DoubleArgumentType.getDouble(ctx, "y");
             double z = DoubleArgumentType.getDouble(ctx, "z");

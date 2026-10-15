@@ -15,7 +15,7 @@ public class Seed {
     public final MCVersion version;
 
     public Seed(Long seed, MCVersion version) {
-        this.seed = seed;
+        this.seed = seed != null ? seed : 0L;
         if (version == null)
             version = MCVersion.latest();
         this.version = version;
@@ -24,11 +24,12 @@ public class Seed {
     public CompoundTag toTag() {
         CompoundTag tag = new CompoundTag();
         tag.put("seed", LongTag.valueOf(seed));
-        tag.put("version", StringTag.valueOf(version.name));
+        tag.put("version", StringTag.valueOf(version != null && version.name != null ? version.name : MCVersion.latest().name));
         return tag;
     }
 
     public static Seed fromTag(CompoundTag tag) {
+        if (tag == null) return new Seed(0L, MCVersion.latest());
         return new Seed(
             tag.getLong("seed").orElse(0L),
             MCVersion.fromString(tag.getString("version").orElse(""))

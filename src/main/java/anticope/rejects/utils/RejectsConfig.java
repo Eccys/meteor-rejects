@@ -15,7 +15,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class RejectsConfig extends System<RejectsConfig> {
-    private static final RejectsConfig INSTANCE = new RejectsConfig();
+    private static RejectsConfig INSTANCE;
 
     public enum HttpAllowed {
         Everything,
@@ -37,6 +37,7 @@ public class RejectsConfig extends System<RejectsConfig> {
     }
 
     public static RejectsConfig get() {
+        if (INSTANCE == null) INSTANCE = new RejectsConfig();
         return INSTANCE;
     }
 

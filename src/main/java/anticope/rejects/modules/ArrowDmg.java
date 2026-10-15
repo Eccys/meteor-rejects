@@ -39,7 +39,7 @@ public class ArrowDmg extends Module {
 
     @EventHandler
     private void onStopUsingItem(StopUsingItemEvent event) {
-        if (!isValidItem(event.itemStack.getItem()))
+        if (mc.player == null || mc.player.connection == null || event.itemStack == null || !isValidItem(event.itemStack.getItem()))
             return;
 
         LocalPlayer p = mc.player;

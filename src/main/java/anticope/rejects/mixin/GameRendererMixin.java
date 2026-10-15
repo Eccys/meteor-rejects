@@ -21,6 +21,7 @@ public class GameRendererMixin {
 
     @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;doEntityOutline()V", ordinal = 0))
 	private void renderShader(DeltaTracker tickCounter, boolean tick, CallbackInfo ci) {
+        if (Modules.get() == null) return;
         Rendering renderingModule = Modules.get().get(Rendering.class);
         if (renderingModule == null) return;
         PostChain shader = renderingModule.getShaderEffect();

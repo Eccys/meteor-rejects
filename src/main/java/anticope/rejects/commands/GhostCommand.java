@@ -29,7 +29,7 @@ public class GhostCommand extends Command {
 
     private void execute(int radius) {
         ClientPacketListener conn = mc.getConnection();
-        if (conn == null)
+        if (conn == null || mc.player == null)
             return;
         BlockPos pos = mc.player.blockPosition();
         for (int dx = -radius; dx <= radius; dx++)

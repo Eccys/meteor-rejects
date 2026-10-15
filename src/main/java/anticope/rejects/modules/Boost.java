@@ -51,7 +51,7 @@ public class Boost extends Module {
 
     @EventHandler
     private void onTick(TickEvent.Pre event) {
-        if (!autoBoost.get()) return;
+        if (!autoBoost.get() || mc.player == null) return;
         if (timer < 1) {
             boost();
             timer = interval.get();
@@ -61,6 +61,7 @@ public class Boost extends Module {
     }
 
     private void boost() {
+        if (mc.player == null) return;
         Vec3 v = mc.player.getForward().scale(strength.get());
         mc.player.push(v.x(), v.y(), v.z());
     }
