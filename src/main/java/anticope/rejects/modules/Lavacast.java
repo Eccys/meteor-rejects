@@ -204,6 +204,7 @@ public class Lavacast extends Module {
     }
 
     private void placeLava() {
+        if (mc.player == null || mc.gameMode == null) return;
         FindItemResult findItemResult = InvUtils.findInHotbar(Items.LAVA_BUCKET);
         if (!findItemResult.found()) {
             error("No lava bucket found.");
@@ -216,6 +217,7 @@ public class Lavacast extends Module {
     }
 
     private void placeWater() {
+        if (mc.player == null || mc.gameMode == null) return;
         FindItemResult findItemResult = InvUtils.findInHotbar(Items.WATER_BUCKET);
         if (!findItemResult.found()) {
             error("No water bucket found.");
@@ -228,6 +230,7 @@ public class Lavacast extends Module {
     }
 
     private void pickupLiquid() {
+        if (mc.player == null || mc.gameMode == null) return;
         FindItemResult findItemResult = InvUtils.findInHotbar(Items.BUCKET);
         if (!findItemResult.found()) {
             error("No bucket found.");
@@ -240,6 +243,7 @@ public class Lavacast extends Module {
     }
 
     private void updateBlockBreakingProgress() {
+        if (mc.gameMode == null || placeFluidPos == null) return;
         mc.gameMode.continueDestroyBlock(placeFluidPos,Direction.UP);
     }
 

@@ -18,6 +18,7 @@ public class SetBlockCommand extends Command {
     @Override
     public void build(LiteralArgumentBuilder<ClientSuggestionProvider> builder) {
         builder.then(argument("pos", ClientPosArgumentType.pos()).then(argument("block", BlockStateArgument.block(REGISTRY_ACCESS)).executes(ctx -> {
+            if (mc.level == null) return SINGLE_SUCCESS;
             Vec3 pos = ClientPosArgumentType.getPos(ctx, "pos");
             BlockState blockState = ctx.getArgument("block", BlockInput.class).getState();
             mc.level.setBlockAndUpdate(BlockPos.containing(pos), blockState);

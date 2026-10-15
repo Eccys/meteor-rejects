@@ -68,12 +68,22 @@ public class InteractionScreen extends Screen {
     private final int textColor;
 
     public InteractionScreen(Entity e) {
-        this(e, Modules.get().get(InteractionMenu.class));
+        this(e, Modules.get() != null ? Modules.get().get(InteractionMenu.class) : null);
     }
 
     public InteractionScreen(Entity entity, InteractionMenu module) {
         super(Component.literal("Menu Screen"));
-        if (module == null) closeScreen();
+        this.entity = entity;
+        this.functions = new HashMap<>();
+        if (module == null || entity == null) {
+            selectedDotColor = 0;
+            dotColor = 0;
+            backgroundColor = 0;
+            borderColor = 0;
+            textColor = 0;
+            msgs = Map.of();
+            return;
+        }
 
         selectedDotColor = module.selectedDotColor.get().getPacked();
         dotColor = module.dotColor.get().getPacked();
@@ -81,8 +91,6 @@ public class InteractionScreen extends Screen {
         borderColor = module.borderColor.get().getPacked();
         textColor = module.textColor.get().getPacked();
 
-        this.entity = entity;
-        functions = new HashMap<>();
         functions.put("Stats", (Entity e) -> {
             closeScreen();
             minecraft.setScreen(new StatsScreen(e));
@@ -145,7 +153,7 @@ public class InteractionScreen extends Screen {
                 closeScreen();
             });
         }
-        msgs = Modules.get().get(InteractionMenu.class).messages.get();
+        msgs = module.messages.get();
         msgs.keySet().forEach((key) -> {
             functions.put(key, (Entity e) -> {
                 closeScreen();
@@ -212,6 +220,10 @@ public class InteractionScreen extends Screen {
 
     public void init() {
         super.init();
+        if (entity == null || functions.isEmpty() || minecraft.player == null) {
+            closeScreen();
+            return;
+        }
         this.cursorMode(GLFW.GLFW_CURSOR_HIDDEN);
         yaw = minecraft.player.getYRot();
         pitch = minecraft.player.getXRot();
@@ -226,21 +238,27 @@ public class InteractionScreen extends Screen {
     }
 
     public void tick() {
-        if (Modules.get().get(InteractionMenu.class).keybind.get().isPressed())
+        InteractionMenu menu = Modules.get() != null ? Modules.get().get(InteractionMenu.class) : null;
+        if (menu != null && menu.keybind.get().isPressed())
             onClose();
     }
 
     private void closeScreen() {
-        minecraft.setScreen(null);
+        if (minecraft != null) {
+            minecraft.setScreen(null);
+        }
     }
 
     public void onClose() {
-        cursorMode(GLFW.GLFW_CURSOR_NORMAL);
+        if (minecraft != null) {
+            cursorMode(GLFW.GLFW_CURSOR_NORMAL);
+        }
         // This makes the magic
-        if (focusedString != null) {
+        if (focusedString != null && functions.containsKey(focusedString)) {
             functions.get(focusedString).accept(this.entity);
-        } else
+        } else if (minecraft != null) {
             minecraft.setScreen(null);
+        }
     }
 
     public boolean isPauseScreen() {
@@ -248,6 +266,7 @@ public class InteractionScreen extends Screen {
     }
 
     public void render(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+        if (entity == null || minecraft == null || minecraft.player == null) return;
         drawDots(context, (int) (Math.min(height, width) / 2 * 0.75), mouseX, mouseY);
 
         context.centeredText(font, entity.getName(), width / 2, 12, 0xFFFFFFFF);
@@ -300,7 +319,7 @@ public class InteractionScreen extends Screen {
 
         for (int j = 0; j < functions.size(); j++) {
             Point point = pointList.get(j);
-            if (pointList.get(focusedDot) == point) {
+            if (focusedDot >= 0 && focusedDot < pointList.size() && pointList.get(focusedDot) == point) {
                 drawDot(context, point.x - 4, point.y - 4, selectedDotColor);
                 this.focusedString = cache[focusedDot];
             } else

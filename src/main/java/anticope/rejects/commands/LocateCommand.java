@@ -38,6 +38,7 @@ public class LocateCommand extends Command {
 	public void build(LiteralArgumentBuilder<ClientSuggestionProvider> builder) {
 		builder.then(literal("feature")
 				.then(argument("feature", EnumArgumentType.enumArgument(Cubiomes.StructureType.Village)).executes(ctx -> {
+					if (mc.player == null) return SINGLE_SUCCESS;
 					Cubiomes.StructureType feature = EnumArgumentType.getEnum(ctx, "feature", Cubiomes.StructureType.Village);
 					BlockPos playerPos = mc.player.blockPosition();
 					anticope.rejects.utils.seeds.Seed currentSeed = Seeds.get().getSeed();

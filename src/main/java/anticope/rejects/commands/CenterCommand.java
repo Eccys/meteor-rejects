@@ -14,6 +14,7 @@ public class CenterCommand extends Command {
     @Override
     public void build(LiteralArgumentBuilder<ClientSuggestionProvider> builder) {
         builder.executes(context -> {
+            if (mc.player == null || mc.player.connection == null) return SINGLE_SUCCESS;
             double x = Mth.floor(mc.player.getX()) + 0.5;
             double z = Mth.floor(mc.player.getZ()) + 0.5;
             mc.player.setPos(x, mc.player.getY(), z);
@@ -23,6 +24,7 @@ public class CenterCommand extends Command {
         });
 
         builder.then(literal("middle").executes(context -> {
+            if (mc.player == null || mc.player.connection == null) return SINGLE_SUCCESS;
             double x = Mth.floor(mc.player.getX()) + 0.5;
             double z = Mth.floor(mc.player.getZ()) + 0.5;
             mc.player.setPos(x, mc.player.getY(), z);
@@ -32,6 +34,7 @@ public class CenterCommand extends Command {
         }));
 
         builder.then(literal("center").executes(context -> {
+            if (mc.player == null || mc.player.connection == null) return SINGLE_SUCCESS;
             double x = Mth.floor(mc.player.getX());
             double z = Mth.floor(mc.player.getZ());
             mc.player.setPos(x, mc.player.getY(), z);

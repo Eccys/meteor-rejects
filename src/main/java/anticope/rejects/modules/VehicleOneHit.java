@@ -33,16 +33,19 @@ public class VehicleOneHit extends Module {
 
     @EventHandler
     private void onPacketSend(PacketEvent.Send event) {
-        if (sending) return;
+        if (sending || mc.player == null || mc.player.connection == null) return;
         if (!(event.packet instanceof ServerboundAttackPacket)
             || !(mc.hitResult instanceof EntityHitResult ehr)
             || (!(ehr.getEntity() instanceof AbstractMinecart) && !(ehr.getEntity() instanceof AbstractBoat))
         ) return;
 
         sending = true;
-        for (int i = 0; i < amount.get() - 1; i++) {
-            mc.player.connection.getConnection().send(event.packet, null);
+        try {
+            for (int i = 0; i < amount.get() - 1; i++) {
+                mc.player.connection.getConnection().send(event.packet, null);
+            }
+        } finally {
+            sending = false;
         }
-        sending = false;
     }
 }

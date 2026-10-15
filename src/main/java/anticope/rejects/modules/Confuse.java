@@ -112,6 +112,7 @@ public class Confuse extends Module {
 
     @EventHandler
     private void onTick(TickEvent.Pre event) {
+        if (mc.player == null || mc.level == null) return;
 
         // Delay
         delayWaited++;

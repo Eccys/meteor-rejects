@@ -51,7 +51,8 @@ public class MossBot extends Module {
 
     @EventHandler
     private void onTick(TickEvent.Pre event) {
-        mossMap.entrySet().removeIf(e -> e.setValue(e.getValue() - 1) == 0);
+        if (mc.player == null || mc.level == null || mc.gameMode == null) return;
+        mossMap.entrySet().removeIf(e -> e.setValue(e.getValue() - 1) <= 1);
         FindItemResult findItemResult = InvUtils.findInHotbar(Items.BONE_MEAL);
         if (!findItemResult.found()) {
             return;
@@ -77,7 +78,7 @@ public class MossBot extends Module {
     private int getMossSpots(BlockPos pos) {
         Block block = mc.level.getBlockState(pos).getBlock();
         if ((block != Blocks.MOSS_BLOCK && block != Blocks.PALE_MOSS_BLOCK)
-                || mc.level.getBlockState(pos.above()).getDestroySpeed(mc.level, pos) != 0f) {
+                || mc.level.getBlockState(pos.above()).getDestroySpeed(mc.level, pos.above()) != 0f) {
             return 0;
         }
 

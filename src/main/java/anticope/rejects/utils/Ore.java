@@ -99,16 +99,15 @@ public class Ore {
 
         Map<ResourceKey<Biome>, List<Ore>> biomeOreMap = new HashMap<>();
 
-        biomes1.forEach(biome -> {
-            biomeOreMap.put(biome.unwrapKey().get(), new ArrayList<>());
+        biomes1.forEach(biome -> biome.unwrapKey().ifPresent(biomeKey -> {
+            List<Ore> ores = new ArrayList<>();
+            biomeOreMap.put(biomeKey, ores);
             biome.value().getGenerationSettings().features().stream()
                     .flatMap(HolderSet::stream)
                     .map(Holder::value)
                     .filter(featureToOre::containsKey)
-                    .forEach(feature -> {
-                        biomeOreMap.get(biome.unwrapKey().get()).add(featureToOre.get(feature));
-                    });
-        });
+                    .forEach(feature -> ores.add(featureToOre.get(feature)));
+        }));
         return biomeOreMap;
     }
 
@@ -147,8 +146,9 @@ public class Ore {
         this.index = index;
         this.active = active;
         this.color = color;
-        int bottom = Minecraft.getInstance().level.getMinY();
-        int height = Minecraft.getInstance().level.dimensionType().logicalHeight();
+        var level = Minecraft.getInstance() != null ? Minecraft.getInstance().level : null;
+        int bottom = level != null ? level.getMinY() : -64;
+        int height = level != null ? level.dimensionType().logicalHeight() : 384;
         this.heightContext = new WorldGenerationContext(null, LevelHeightAccessor.create(bottom, height));
 
         for (PlacementModifier modifier : feature.placement()) {

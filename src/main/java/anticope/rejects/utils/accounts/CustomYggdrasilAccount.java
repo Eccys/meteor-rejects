@@ -2,7 +2,6 @@ package anticope.rejects.utils.accounts;
 
 import anticope.rejects.MeteorRejectsAddon;
 import com.mojang.authlib.exceptions.AuthenticationException;
-import com.mojang.authlib.minecraft.MinecraftSessionService;
 import meteordevelopment.meteorclient.systems.accounts.Account;
 import meteordevelopment.meteorclient.systems.accounts.AccountType;
 import meteordevelopment.meteorclient.utils.misc.NbtException;
@@ -36,7 +35,6 @@ public class CustomYggdrasilAccount extends Account<CustomYggdrasilAccount> {
     public boolean login() {
         try {
             CustomYggdrasilLogin.LocalYggdrasilAuthenticationService service = new CustomYggdrasilLogin.LocalYggdrasilAuthenticationService(java.net.Proxy.NO_PROXY, server);
-            MinecraftSessionService sessService = new CustomYggdrasilLogin.LocalYggdrasilMinecraftSessionService(service, service.server);
             applyLoginEnvironment(service);
 
             User session = CustomYggdrasilLogin.login(name, password, server);
@@ -44,7 +42,7 @@ public class CustomYggdrasilAccount extends Account<CustomYggdrasilAccount> {
             cache.username = session.getName();
             cache.loadHead();
             return true;
-        } catch (AuthenticationException e) {
+        } catch (Exception e) {
             if (e.getMessage() != null && (e.getMessage().contains("Invalid username or password") || e.getMessage().contains("account migrated")))
                 MeteorRejectsAddon.LOG.error("Wrong password.");
             else MeteorRejectsAddon.LOG.error("Failed to contact the authentication server.");
@@ -57,8 +55,8 @@ public class CustomYggdrasilAccount extends Account<CustomYggdrasilAccount> {
         CompoundTag tag = super.toTag();
 
         tag.putString("type", "Yggdrasil");
-        tag.putString("password", password);
-        tag.putString("server", server);
+        tag.putString("password", password != null ? password : "");
+        tag.putString("server", server != null ? server : "");
 
         return tag;
     }
@@ -77,6 +75,6 @@ public class CustomYggdrasilAccount extends Account<CustomYggdrasilAccount> {
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof CustomYggdrasilAccount)) return false;
-        return ((CustomYggdrasilAccount) o).name.equals(this.name);
+        return java.util.Objects.equals(((CustomYggdrasilAccount) o).name, this.name);
     }
 }

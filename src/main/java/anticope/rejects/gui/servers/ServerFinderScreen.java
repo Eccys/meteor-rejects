@@ -123,7 +123,7 @@ public class ServerFinderScreen extends WindowScreen implements IServerFinderDon
 
         parseVersionFilters();
 
-        findServers();
+        new Thread(this::findServers, "Server Finder").start();
     }
 
     private void parseVersionFilters() {
