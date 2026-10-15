@@ -96,8 +96,14 @@ public class ChestAura extends Module {
         openedBlocks.clear();
     }
 
+    @Override
+    public void onDeactivate() {
+        MeteorClient.EVENT_BUS.unsubscribe(closeListener);
+    }
+
     @EventHandler
     private void onTick(TickEvent.Pre event) {
+        if (mc.player == null || mc.gameMode == null) return;
         if (forget.get() != 0) {
             for (Map.Entry<BlockPos, Integer> e : new HashMap<>(openedBlocks).entrySet()) {
                 int time = e.getValue();
@@ -106,7 +112,11 @@ public class ChestAura extends Module {
             }
         }
 
-        if (timer > 0 && mc.screen != null) return;
+        if (mc.screen != null) return;
+        if (timer > 0) {
+            timer--;
+            return;
+        }
 
         for (BlockEntity block : Utils.blockEntities()) {
             if (!blocks.get().contains(block.getType())) continue;
@@ -134,7 +144,6 @@ public class ChestAura extends Module {
             MeteorClient.EVENT_BUS.subscribe(closeListener);
             break;
         }
-        timer--;
     }
 
     public class CloseListener {

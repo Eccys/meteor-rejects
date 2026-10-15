@@ -63,7 +63,8 @@ public class ServerListPinger {
         ServerAddress serverAddress = ServerAddress.parseString(entry.address);
         Optional<InetSocketAddress> address = ServerNameResolver.DEFAULT.resolveAddress(serverAddress).map(ResolvedServerAddress::asInetSocketAddress);
         if (address.isEmpty()) {
-            return;
+            notifyDisconnectListeners();
+            throw new UnknownHostException(entry.address);
         }
         final Connection clientConnection = Connection.connectToServer(address.get(), EventLoopGroupHolder.remote(false), (LocalSampleLogger) null);
 
@@ -103,7 +104,7 @@ public class ServerListPinger {
                 clientConnection.send(new ServerboundPingRequestPacket(this.startTime));
                 this.sentQuery = true;
                 notifyDisconnectListeners();
-                }
+            }
 
             public void handlePongResponse(ClientboundPongResponsePacket packet) {
                 long l = this.startTime;
@@ -114,6 +115,7 @@ public class ServerListPinger {
 
             public void onDisconnected(Component reason) {
                 if (!this.sentQuery) {
+                    failedToConnect = true;
                     ServerListPinger.LOGGER.error("Can't ping {}: {}", entry.address, reason.getString());
                     entry.label = "multiplayer.status.cannot_connect";
                     entry.playerCountLabel = "";
@@ -126,7 +128,7 @@ public class ServerListPinger {
 
             @Override
             public void onDisconnect(DisconnectionDetails info) {
-
+                onDisconnected(info.reason());
             }
 
             public boolean isAcceptingMessages() {

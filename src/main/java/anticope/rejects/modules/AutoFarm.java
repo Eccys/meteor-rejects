@@ -154,6 +154,7 @@ public class AutoFarm extends Module {
 
     @EventHandler
     private void onBreakBlock(BreakBlockEvent event) {
+        if (mc.level == null) return;
         BlockState state = mc.level.getBlockState(event.blockPos);
         Block block = state.getBlock();
         if (onlyReplant.get()) {
@@ -165,7 +166,7 @@ public class AutoFarm extends Module {
             else if (block == Blocks.NETHER_WART) item = Items.NETHER_WART;
             else if (block == Blocks.PITCHER_CROP) item = Items.PITCHER_POD;
             else if (block == Blocks.TORCHFLOWER) item = Items.TORCHFLOWER_SEEDS;
-            if (item != null) replantMap.put(event.blockPos, item);
+            if (item != null) replantMap.put(event.blockPos.immutable(), item);
         }
     }
 
@@ -229,7 +230,9 @@ public class AutoFarm extends Module {
             for (BlockPos replantPos : replantMap.keySet()) {
                 if (replantPos.equals(pos.above())) {
                     findItemResult = InvUtils.find(replantMap.get(replantPos));
-                    replantMap.remove(replantPos);
+                    if (findItemResult.found()) {
+                        replantMap.remove(replantPos);
+                    }
                     break;
                 }
             }

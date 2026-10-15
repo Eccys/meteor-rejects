@@ -57,12 +57,14 @@ public class FillCommand extends Command {
     }
 
     private MinMaxCoords getMinMaxCoords(Vec3 fromPos, Vec3 toPos) {
-        int minX = Math.min((int) fromPos.x(), (int) toPos.x());
-        int maxX = Math.max((int) fromPos.x(), (int) toPos.x());
-        int minY = Math.min((int) fromPos.y(), (int) toPos.y());
-        int maxY = Math.max((int) fromPos.y(), (int) toPos.y());
-        int minZ = Math.min((int) fromPos.z(), (int) toPos.z());
-        int maxZ = Math.max((int) fromPos.z(), (int) toPos.z());
+        BlockPos from = BlockPos.containing(fromPos);
+        BlockPos to = BlockPos.containing(toPos);
+        int minX = Math.min(from.getX(), to.getX());
+        int maxX = Math.max(from.getX(), to.getX());
+        int minY = Math.min(from.getY(), to.getY());
+        int maxY = Math.max(from.getY(), to.getY());
+        int minZ = Math.min(from.getZ(), to.getZ());
+        int maxZ = Math.max(from.getZ(), to.getZ());
 
         return new MinMaxCoords(minX, maxX, minY, maxY, minZ, maxZ);
     }
