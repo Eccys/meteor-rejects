@@ -21,9 +21,8 @@ public class StatsScreen extends WindowScreen {
     private boolean attribListExpanded = true;
     private boolean dimensionExpanded = true;
     public StatsScreen(Entity e) {
-        super(GuiThemes.get(),e.getName().getString());
+        super(GuiThemes.get(), e != null ? e.getName().getString() : "Stats");
         this.entity = e;
-        updateData();
         MeteorClient.EVENT_BUS.subscribe(this);
     }
 
@@ -35,6 +34,7 @@ public class StatsScreen extends WindowScreen {
 
     private void updateData() {
         clear();
+        if (entity == null) return;
         GuiTheme theme = GuiThemes.get();
         Language lang = ClientLanguage.getInstance();
         add(theme.label(String.format("Type: %s", lang.getOrDefault(entity.getType().getDescriptionId()))));
@@ -83,5 +83,7 @@ public class StatsScreen extends WindowScreen {
     }
 
     @Override
-    public void initWidgets() {}
+    public void initWidgets() {
+        updateData();
+    }
 }

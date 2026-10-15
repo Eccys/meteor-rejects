@@ -36,7 +36,7 @@ public class ServerSpoofMixin extends Module {
             .defaultValue(false)
             .onChanged(val -> {
                 if (!EP_LOADED) { if (val) warning("ExploitPreventer is not installed."); return; }
-                ExploitPreventerCompat.applyTranslationKey(val);
+                if (isActive()) ExploitPreventerCompat.applyTranslationKey(val);
             })
             .build()
         );
@@ -47,7 +47,7 @@ public class ServerSpoofMixin extends Module {
             .defaultValue(false)
             .onChanged(val -> {
                 if (!EP_LOADED) { if (val) warning("ExploitPreventer is not installed."); return; }
-                ExploitPreventerCompat.applyFingerprinting(val);
+                if (isActive()) ExploitPreventerCompat.applyFingerprinting(val);
             })
             .build()
         );
@@ -58,7 +58,7 @@ public class ServerSpoofMixin extends Module {
             .defaultValue(false)
             .onChanged(val -> {
                 if (!EP_LOADED) { if (val) warning("ExploitPreventer is not installed."); return; }
-                ExploitPreventerCompat.applyLocalHTTPRequest(val);
+                if (isActive()) ExploitPreventerCompat.applyLocalHTTPRequest(val);
             })
             .build()
         );

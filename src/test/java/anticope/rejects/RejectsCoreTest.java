@@ -247,6 +247,23 @@ class RejectsCoreTest {
                     .findFirst()
                     .orElseThrow();
             assertFalse(closedResult.isOpen());
+            assertFalse(runner.running, "PScanRunner.running should be false after completion");
         }
+
+        // Verify immediate cancellation via PortScannerManager.killAllScans() stops runner and suppresses callback
+        CountDownLatch cancelledCallbackLatch = new CountDownLatch(1);
+        PScanRunner cancelledRunner = new PScanRunner(
+                InetAddress.getLoopbackAddress(),
+                1,
+                500,
+                500,
+                List.of(1, 2, 3, 4, 5),
+                results -> cancelledCallbackLatch.countDown()
+        );
+        PortScannerManager.scans.add(cancelledRunner);
+        PortScannerManager.killAllScans();
+        assertFalse(cancelledRunner.running);
+        assertTrue(PortScannerManager.scans.isEmpty());
+        assertFalse(cancelledCallbackLatch.await(150, TimeUnit.MILLISECONDS), "Cancelled scan should not invoke completion callback");
     }
 }

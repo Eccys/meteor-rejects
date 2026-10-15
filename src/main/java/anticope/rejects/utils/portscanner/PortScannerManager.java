@@ -1,14 +1,14 @@
 package anticope.rejects.utils.portscanner;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class PortScannerManager {
-    public static List<PScanRunner> scans = new ArrayList<>();
+    public static List<PScanRunner> scans = new CopyOnWriteArrayList<>();
 
     public static void killAllScans() {
         for (PScanRunner runner : scans) {
-            if (runner.running)
+            if (runner != null)
                 runner.cancel();
         }
         scans.clear();

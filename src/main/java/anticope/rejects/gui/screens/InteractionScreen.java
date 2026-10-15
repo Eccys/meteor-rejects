@@ -284,7 +284,9 @@ public class InteractionScreen extends Screen {
         int scale = minecraft.options.guiScale().get();
         Vector2f mouse = new Vector2f(mouseX, mouseY);
         Vector2f center = new Vector2f(width / 2, height / 2);
-        mouse.sub(center).normalize();
+        mouse.sub(center);
+        if (mouse.lengthSquared() == 0f) return mouse;
+        mouse.normalize();
 
         if (scale == 0) scale = 4;
 
@@ -370,7 +372,8 @@ public class InteractionScreen extends Screen {
     private class StaticListener {
         @EventHandler
         private void onKey(KeyInputEvent event) {
-            if (event.key() == minecraft.options.keyShift.getDefaultKey().getValue()) {
+            if (minecraft == null || minecraft.options == null) return;
+            if (event.key() == meteordevelopment.meteorclient.utils.misc.input.Input.getKey(minecraft.options.keyShift)) {
                 minecraft.setCameraEntity(minecraft.player);
                 event.cancel();
                 MeteorClient.EVENT_BUS.unsubscribe(this);

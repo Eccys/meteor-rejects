@@ -150,6 +150,8 @@ public class AutoFarm extends Module {
     @Override
     public void onDeactivate() {
         replantMap.clear();
+        for (BlockPos.MutableBlockPos blockPos : blocks) blockPosPool.free(blockPos);
+        blocks.clear();
     }
 
     @EventHandler
@@ -165,13 +167,14 @@ public class AutoFarm extends Module {
             else if (block == Blocks.BEETROOTS) item = Items.BEETROOT_SEEDS;
             else if (block == Blocks.NETHER_WART) item = Items.NETHER_WART;
             else if (block == Blocks.PITCHER_CROP) item = Items.PITCHER_POD;
-            else if (block == Blocks.TORCHFLOWER) item = Items.TORCHFLOWER_SEEDS;
+            else if (block == Blocks.TORCHFLOWER || block == Blocks.TORCHFLOWER_CROP) item = Items.TORCHFLOWER_SEEDS;
             if (item != null) replantMap.put(event.blockPos.immutable(), item);
         }
     }
 
     @EventHandler
     private void onTick(TickEvent.Pre event) {
+        if (mc.player == null || mc.level == null || mc.gameMode == null) return;
         actions = 0;
         BlockIterator.register(range.get(), range.get(), (pos, state) -> {
             if (mc.player.getEyePosition().distanceTo(Vec3.atCenterOf(pos)) <= range.get())
@@ -179,6 +182,11 @@ public class AutoFarm extends Module {
         });
 
         BlockIterator.after(() -> {
+            if (mc.player == null || mc.level == null || mc.gameMode == null) {
+                for (BlockPos.MutableBlockPos blockPos : blocks) blockPosPool.free(blockPos);
+                blocks.clear();
+                return;
+            }
             blocks.sort(Comparator.comparingDouble(value -> mc.player.getEyePosition().distanceTo(Vec3.atCenterOf(value))));
 
             for (BlockPos pos : blocks) {
@@ -226,30 +234,31 @@ public class AutoFarm extends Module {
         if (!plant.get()) return false;
         if (!mc.level.isEmptyBlock(pos.above())) return false;
         FindItemResult findItemResult = null;
+        BlockPos matchedReplantPos = null;
         if (onlyReplant.get()) {
             for (BlockPos replantPos : replantMap.keySet()) {
                 if (replantPos.equals(pos.above())) {
-                    findItemResult = InvUtils.find(replantMap.get(replantPos));
-                    if (findItemResult.found()) {
-                        replantMap.remove(replantPos);
-                    }
+                    findItemResult = InvUtils.findInHotbar(replantMap.get(replantPos));
+                    matchedReplantPos = replantPos;
                     break;
                 }
             }
         } else if (block instanceof FarmlandBlock) {
-            findItemResult = InvUtils.find(itemStack -> {
+            findItemResult = InvUtils.findInHotbar(itemStack -> {
                 Item item = itemStack.getItem();
                 return item != Items.NETHER_WART && plantItems.get().contains(item);
             });
         } else if (block instanceof SoulSandBlock) {
-            findItemResult = InvUtils.find(itemStack -> {
+            findItemResult = InvUtils.findInHotbar(itemStack -> {
                 Item item = itemStack.getItem();
                 return item == Items.NETHER_WART && plantItems.get().contains(Items.NETHER_WART);
             });
         }
         if (findItemResult != null && findItemResult.found()) {
-            BlockUtils.place(pos.above(), findItemResult, rotate.get(), -100, false);
-            return true;
+            if (BlockUtils.place(pos.above(), findItemResult, rotate.get(), -100, false)) {
+                if (matchedReplantPos != null) replantMap.remove(matchedReplantPos);
+                return true;
+            }
         }
         return false;
     }

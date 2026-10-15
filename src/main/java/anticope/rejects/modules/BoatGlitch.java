@@ -122,8 +122,8 @@ public class BoatGlitch extends Module {
     }
     @EventHandler
     private void onKey(KeyInputEvent event) {
-        if (mc.player == null) return;
-        if (event.key() == mc.options.keyShift.getDefaultKey().getValue() && event.action == KeyAction.Press) {
+        if (mc.player == null || mc.options == null) return;
+        if (event.key() == meteordevelopment.meteorclient.utils.misc.input.Input.getKey(mc.options.keyShift) && event.action == KeyAction.Press) {
             if (mc.player.getVehicle() instanceof AbstractBoat) {
                 dontPhase = false;
                 boat = null;

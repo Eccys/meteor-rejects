@@ -58,6 +58,8 @@ public class HeadScreen extends WindowScreen {
         .build()
     );
 
+    private volatile List<ItemStack> cachedHeads = List.of();
+
     public HeadScreen(GuiTheme theme) {
         super(theme, "Heads");
         loadHeads();
@@ -67,6 +69,33 @@ public class HeadScreen extends WindowScreen {
         clear();
         add(theme.settings(settings)).expandX();
         add(theme.horizontalSeparator()).expandX();
+    }
+
+    private void renderTable(List<ItemStack> heads) {
+        set();
+        if (heads == null || heads.isEmpty()) return;
+        WTable t = theme.table();
+        for (ItemStack head : heads) {
+            t.add(theme.item(head));
+            t.add(theme.label(head.getHoverName().getString()));
+            WButton give = t.add(theme.button("Give")).widget();
+            give.action = () -> {
+                try {
+                    GiveUtils.giveItem(head);
+                } catch (CommandSyntaxException e) {
+                    ChatUtils.errorPrefix("Heads", e.getMessage());
+                }
+            };
+            WButton equip = t.add(theme.button("Equip")).widget();
+            equip.tooltip = "Equip client-side.";
+            equip.action = () -> {
+                if (mc.player != null) {
+                    mc.player.getInventory().setItem(39, head); // 39 is helmet slot (36 + 3)
+                }
+            };
+            t.row();
+        }
+        add(t).expandX().minWidth(400).widget();
     }
 
     private String getCat() {
@@ -84,48 +113,35 @@ public class HeadScreen extends WindowScreen {
                     heads.add(createHeadStack(a.get("uuid"), a.get("value"), a.get("name")));
                 } catch (Exception e) { }
             });
+            cachedHeads = heads;
 
-            mc.execute(() -> {
-                WTable t = theme.table();
-                for (ItemStack head : heads) {
-                    t.add(theme.item(head));
-                    t.add(theme.label(head.getHoverName().getString()));
-                    WButton give = t.add(theme.button("Give")).widget();
-                    give.action = () -> {
-                        try {
-                            GiveUtils.giveItem(head);
-                        } catch (CommandSyntaxException e) {
-                            ChatUtils.errorPrefix("Heads", e.getMessage());
-                        }
-                    };
-                    WButton equip = t.add(theme.button("Equip")).widget();
-                    equip.tooltip = "Equip client-side.";
-                    equip.action = () -> {
-                        if (mc.player != null) {
-                            mc.player.getInventory().setItem(39, head); // 39 is helmet slot (36 + 3)
-                        }
-                    };
-                    t.row();
-                }
-                set();
-                add(t).expandX().minWidth(400).widget();
-            });
+            if (mc != null) {
+                mc.execute(() -> renderTable(heads));
+            }
         });
     }
 
     private ItemStack createHeadStack(String uuid, String value, String name) {
+        if (value == null || value.isEmpty()) throw new IllegalArgumentException("Missing head texture value");
         ItemStack head = Items.PLAYER_HEAD.getDefaultInstance();
-        UUID parsedUuid = UUID.fromString(uuid);
+        UUID parsedUuid;
+        try {
+            parsedUuid = uuid != null ? UUID.fromString(uuid) : UUID.randomUUID();
+        } catch (IllegalArgumentException e) {
+            parsedUuid = UUID.randomUUID();
+        }
         GameProfile profile = new GameProfile(
             parsedUuid,
             "Head",
             new PropertyMap(ImmutableMultimap.of("textures", new Property("textures", value)))
         );
         head.set(DataComponents.PROFILE, ResolvableProfile.createResolved(profile));
-        head.set(DataComponents.CUSTOM_NAME, Component.literal(name));
+        head.set(DataComponents.CUSTOM_NAME, Component.literal(name != null ? name : "Head"));
         return head;
     }
 
     @Override
-    public void initWidgets() {}
+    public void initWidgets() {
+        renderTable(cachedHeads);
+    }
 }

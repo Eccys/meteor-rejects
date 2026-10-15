@@ -23,7 +23,7 @@ import java.util.Stack;
 
 public class ServerFinderScreen extends WindowScreen implements IServerFinderDoneListener {
     public static ServerFinderScreen instance = null;
-    private static int searchNumber = 0;
+    private static volatile int searchNumber = 0;
     private final JoinMultiplayerScreen multiplayerScreen;
     private final WTextBox ipBox;
     private final WTextBox versionBox;
@@ -35,12 +35,12 @@ public class ServerFinderScreen extends WindowScreen implements IServerFinderDon
     private final WCheckbox scanPortsBox;
     private final Stack<String> ipsToPing = new Stack<>();
     private final Object serverFinderLock = new Object();
-    private ServerFinderState state;
+    private volatile ServerFinderState state;
     private int maxThreads;
     private volatile int numActiveThreads;
     private volatile int checked;
     private volatile int working;
-    private int targetChecked = 1792;
+    private volatile int targetChecked = 1792;
     private ArrayList<String> versionFilters = new ArrayList<>();
     private int playerCountFilter = 0;
 
@@ -91,7 +91,9 @@ public class ServerFinderScreen extends WindowScreen implements IServerFinderDon
     }
 
     private void newSearch() {
-        searchNumber = (searchNumber + 1) % 1000;
+        synchronized (serverFinderLock) {
+            searchNumber = (searchNumber + 1) % 1000;
+        }
     }
 
     public void incrementTargetChecked(int amount) {
@@ -111,19 +113,20 @@ public class ServerFinderScreen extends WindowScreen implements IServerFinderDon
             return;
         }
 
-        state = ServerFinderState.RESOLVING;
-        maxThreads = maxThreadsBox.get();
-        ipsToPing.clear();
-        targetChecked = 1792;
-        numActiveThreads = 0;
-        checked = 0;
-        working = 0;
+        synchronized (serverFinderLock) {
+            state = ServerFinderState.RESOLVING;
+            maxThreads = maxThreadsBox.get();
+            ipsToPing.clear();
+            targetChecked = 1792;
+            numActiveThreads = 0;
+            checked = 0;
+            working = 0;
 
-        newSearch();
-
-        parseVersionFilters();
-
-        new Thread(this::findServers, "Server Finder").start();
+            newSearch();
+            parseVersionFilters();
+            final int currentSearch = searchNumber;
+            new Thread(() -> findServers(currentSearch), "Server Finder").start();
+        }
     }
 
     private void parseVersionFilters() {
@@ -140,9 +143,11 @@ public class ServerFinderScreen extends WindowScreen implements IServerFinderDon
         }
     }
 
-    private void findServers() {
+    private void findServers(int currentSearch) {
         try {
             InetAddress addr = InetAddress.getByName(ipBox.get().split(":")[0].trim());
+            if (state == ServerFinderState.CANCELLED || searchNumber != currentSearch)
+                return;
 
             int[] ipParts = new int[4];
             for (int i = 0; i < 4; i++)
@@ -150,27 +155,29 @@ public class ServerFinderScreen extends WindowScreen implements IServerFinderDon
 
             state = ServerFinderState.SEARCHING;
             int[] changes = {0, 1, -1, 2, -2, 3, -3};
-            for (int change : changes)
-                for (int i2 = 0; i2 <= 255; i2++) {
-                    if (state == ServerFinderState.CANCELLED)
-                        return;
+            synchronized (serverFinderLock) {
+                for (int change : changes)
+                    for (int i2 = 0; i2 <= 255; i2++) {
+                        if (state == ServerFinderState.CANCELLED || searchNumber != currentSearch)
+                            return;
 
-                    int[] ipParts2 = ipParts.clone();
-                    ipParts2[2] = ipParts[2] + change & 0xff;
-                    ipParts2[3] = i2;
-                    String ip = ipParts2[0] + "." + ipParts2[1] + "." + ipParts2[2] + "." + ipParts2[3];
+                        int[] ipParts2 = ipParts.clone();
+                        ipParts2[2] = ipParts[2] + change & 0xff;
+                        ipParts2[3] = i2;
+                        String ip = ipParts2[0] + "." + ipParts2[1] + "." + ipParts2[2] + "." + ipParts2[3];
 
-                    ipsToPing.push(ip);
-                }
+                        ipsToPing.push(ip);
+                    }
+            }
             while (numActiveThreads < maxThreads && pingNewIP()) {
             }
 
         } catch (UnknownHostException e) {
-            state = ServerFinderState.UNKNOWN_HOST;
+            if (searchNumber == currentSearch) state = ServerFinderState.UNKNOWN_HOST;
 
         } catch (Exception e) {
             e.printStackTrace();
-            state = ServerFinderState.ERROR;
+            if (searchNumber == currentSearch) state = ServerFinderState.ERROR;
         }
     }
 
@@ -237,21 +244,22 @@ public class ServerFinderScreen extends WindowScreen implements IServerFinderDon
             numActiveThreads--;
         }
         if (pinger.isWorking()) {
-            if (!isServerInList(pinger.getServerIP()) && filterPass(pinger.getServerInfo())) {
-                synchronized (serverFinderLock) {
-                    working++;
-                    String serverIP = pinger.getServerIP();
-                    int foundIndex = working;
-                    if (minecraft != null) {
-                        minecraft.execute(() -> {
-                            if (!isServerInList(serverIP)) {
-                                multiplayerScreen.getServers().add(new ServerData("Server discovery #" + foundIndex, serverIP, ServerData.Type.OTHER), false);
-                                multiplayerScreen.getServers().save();
-                                ((MultiplayerScreenAccessor) multiplayerScreen).getServerListWidget().setSelected(null);
-                                ((MultiplayerScreenAccessor) multiplayerScreen).getServerListWidget().updateOnlineServers(multiplayerScreen.getServers());
+            if (filterPass(pinger.getServerInfo())) {
+                String serverIP = pinger.getServerIP();
+                if (minecraft != null) {
+                    minecraft.execute(() -> {
+                        if (!isServerInList(serverIP)) {
+                            int foundIndex;
+                            synchronized (serverFinderLock) {
+                                working++;
+                                foundIndex = working;
                             }
-                        });
-                    }
+                            multiplayerScreen.getServers().add(new ServerData("Server discovery #" + foundIndex, serverIP, ServerData.Type.OTHER), false);
+                            multiplayerScreen.getServers().save();
+                            ((MultiplayerScreenAccessor) multiplayerScreen).getServerListWidget().setSelected(null);
+                            ((MultiplayerScreenAccessor) multiplayerScreen).getServerListWidget().updateOnlineServers(multiplayerScreen.getServers());
+                        }
+                    });
                 }
             }
         }

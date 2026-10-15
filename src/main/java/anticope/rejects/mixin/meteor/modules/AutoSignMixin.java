@@ -53,7 +53,7 @@ public class AutoSignMixin extends Module {
             IntStream.range(0, text.length).forEach(i -> {
                 IntStream chars = new Random().ints(0, 0x10FFFF);
                 int amount = length.get();
-                text[i] = chars.limit(amount * 5L).mapToObj(i1 -> String.valueOf((char) i1)).collect(Collectors.joining());
+                text[i] = chars.limit(amount).mapToObj(i1 -> String.valueOf((char) i1)).collect(Collectors.joining());
             });
         }
     }

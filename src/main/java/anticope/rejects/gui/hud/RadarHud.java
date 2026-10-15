@@ -58,7 +58,7 @@ public class RadarHud extends HudElement {
             .name("scale")
             .description("The scale.")
             .defaultValue(1)
-            .min(1)
+            .min(0.01)
             .sliderRange(0.01, 5)
             .onChanged(aDouble -> calculateSize())
         .build()
@@ -84,6 +84,7 @@ public class RadarHud extends HudElement {
 
     @Override
     public void render(HudRenderer renderer) {
+        if (Modules.get() == null) return;
         ESP esp = Modules.get().get(ESP.class);
         if (esp == null) return;
         renderer.post(() -> {

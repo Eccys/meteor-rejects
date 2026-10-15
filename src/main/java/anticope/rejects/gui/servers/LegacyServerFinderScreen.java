@@ -24,10 +24,10 @@ public class LegacyServerFinderScreen extends WindowScreen {
     private final WLabel stateLabel;
     private final WLabel checkedLabel;
     private final WLabel workingLabel;
-    private ServerFinderState state;
+    private volatile ServerFinderState state;
     private int maxThreads;
-    private int checked;
-    private int working;
+    private volatile int checked;
+    private volatile int working;
 
     public LegacyServerFinderScreen(GuiTheme theme, JoinMultiplayerScreen multiplayerScreen, Screen parent) {
         super(theme, "Legacy Server Discovery");

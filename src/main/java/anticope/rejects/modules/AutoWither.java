@@ -122,10 +122,13 @@ public class AutoWither extends Module {
     @Override
     public void onDeactivate() {
         wither = null;
+        for (Wither w : withers) witherPool.free(w);
+        withers.clear();
     }
     
     @EventHandler
     private void onTick(TickEvent.Pre event) {
+        if (mc.player == null || mc.level == null) return;
         if (wither == null) {
             // Delay
             if (witherTicksWaited < witherDelay.get() - 1) {
@@ -146,6 +149,7 @@ public class AutoWither extends Module {
     
     @EventHandler
     private void onPostTick(TickEvent.Post event) {
+        if (mc.player == null || mc.level == null) return;
         if (wither == null) {
             // Delay
             if (witherTicksWaited < witherDelay.get() - 1) {
@@ -181,8 +185,12 @@ public class AutoWither extends Module {
         if (!findSoulSand.found()) findSoulSand = InvUtils.findInHotbar(Items.SOUL_SOIL);
         FindItemResult findWitherSkull = InvUtils.findInHotbar(Items.WITHER_SKELETON_SKULL);
         
-        // Check for enough resources
-        if (!findSoulSand.found() || !findWitherSkull.found()) {
+        // Check for enough resources for the remaining build stages
+        boolean needAll = blockDelay.get() == 0 || wither.stage == 0;
+        boolean missingResources = needAll
+                ? (findSoulSand.count() < 4 || findWitherSkull.count() < 3)
+                : ((wither.stage < 4 && !findSoulSand.found()) || (wither.stage >= 4 && wither.stage < 7 && !findWitherSkull.found()));
+        if (missingResources) {
             error("Not enough resources in hotbar");
             toggle();
             return;
@@ -279,10 +287,8 @@ public class AutoWither extends Module {
     
     private boolean isValidSpawn(BlockPos blockPos, Direction direction) {
         // Withers are 3x3x1
-        
-        // Check if y > (255 - 3)
-        // Because withers are 3 blocks tall
-        if (blockPos.getY() > 252) return false;
+        if (blockPos.getY() > mc.level.getMaxY() - 3) return false;
+        if (!BlockUtils.canPlace(blockPos)) return false;
         
         // Determine width from direction
         int widthX = 0;

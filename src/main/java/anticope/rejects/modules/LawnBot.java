@@ -81,13 +81,13 @@ public class LawnBot extends Module {
             return;
         }
 
-        int grassHotbarSlot = InvUtils.findInHotbar((itemStack -> itemStack.getItem() == grassBlockItem)).slot();
+        int grassHotbarSlot = InvUtils.find(itemStack -> itemStack.getItem() == grassBlockItem, 0, 8).slot();
         if (grassHotbarSlot == -1) {
-            int grassInvSlot = InvUtils.find((itemStack -> itemStack.getItem() == grassBlockItem)).slot();
+            int grassInvSlot = InvUtils.find(itemStack -> itemStack.getItem() == grassBlockItem, 9, 35).slot();
             if (grassInvSlot == -1)
                 return;
 
-            mc.gameMode.handleContainerInput(mc.player.containerMenu.containerId, grassInvSlot < 9 ? grassInvSlot + 36 : grassInvSlot, 8, ContainerInput.SWAP, mc.player);
+            mc.gameMode.handleContainerInput(mc.player.containerMenu.containerId, grassInvSlot, 8, ContainerInput.SWAP, mc.player);
             return;
         }
 
@@ -113,13 +113,14 @@ public class LawnBot extends Module {
             if (blockWhitelist.get().contains(block) && distance <= rangeValue) {
                 // Switch to shovel if enabled
                 if (useShovel.get()) {
-                    int shovelSlot = InvUtils.findInHotbar(itemStack ->
+                    int shovelSlot = InvUtils.find(itemStack ->
                         itemStack.getItem() == Items.NETHERITE_SHOVEL ||
                         itemStack.getItem() == Items.DIAMOND_SHOVEL ||
                         itemStack.getItem() == Items.IRON_SHOVEL ||
                         itemStack.getItem() == Items.GOLDEN_SHOVEL ||
                         itemStack.getItem() == Items.STONE_SHOVEL ||
-                        itemStack.getItem() == Items.WOODEN_SHOVEL
+                        itemStack.getItem() == Items.WOODEN_SHOVEL,
+                        0, 8
                     ).slot();
                     if (shovelSlot != -1) {
                         mc.player.getInventory().setSelectedSlot(shovelSlot);
