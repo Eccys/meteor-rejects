@@ -121,6 +121,18 @@ public class PacketFly extends Module {
         super(MeteorRejectsAddon.CATEGORY, "packet-fly", "Fly using packets.");
     }
 
+    @Override
+    public void onActivate() {
+        packets.clear();
+        flightCounter = 0;
+        teleportID = 0;
+    }
+
+    @Override
+    public void onDeactivate() {
+        packets.clear();
+    }
+
     @EventHandler
     public void onSendMovementPackets(SendMovementPacketsEvent.Pre event) {
         mc.player.setDeltaMovement(0.0,0.0,0.0);

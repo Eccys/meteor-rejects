@@ -21,7 +21,7 @@ public class GameModeListSetting extends Setting<List<GameType>> {
         String[] values = str.split(",");
         List<GameType> modes = new ArrayList<>(values.length);
         for (String s : values) {
-            GameType mode = GameType.byName(s);
+            GameType mode = GameType.byName(s.trim().toLowerCase(java.util.Locale.ROOT));
             if (mode != null) modes.add(mode);
         }
         return modes;
@@ -29,12 +29,12 @@ public class GameModeListSetting extends Setting<List<GameType>> {
 
     @Override
     protected boolean isValueValid(List<GameType> value) {
-        return true;
+        return value != null;
     }
 
     @Override
     protected void resetImpl() {
-        value = new ArrayList<>();
+        value = new ArrayList<>(defaultValue);
     }
 
     @Override

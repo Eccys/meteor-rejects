@@ -90,6 +90,7 @@ public class AutoExtinguish extends Module {
 
     @EventHandler
     private void onTick(TickEvent.Pre event) {
+        if (mc.level == null || mc.player == null) return;
         if (mc.level.dimension() == Level.NETHER) {
             if (doesWaterBucketWork) {
                 warning("Water Buckets don't work in this dimension!");
@@ -116,28 +117,30 @@ public class AutoExtinguish extends Module {
             } else if (!mc.player.hasEffect(MobEffects.FIRE_RESISTANCE) && mc.player.isOnFire()) {
                 blockPos = mc.player.blockPosition();
                 final int slot = findSlot(Items.WATER_BUCKET);
-                if (mc.level.getBlockState(blockPos).getBlock() == Blocks.FIRE || mc.level.getBlockState(blockPos).getBlock() == Blocks.SOUL_FIRE) {
-                    float yaw = mc.gameRenderer.getMainCamera().yRot() % 360;
-                    float pitch = mc.gameRenderer.getMainCamera().xRot() % 360;
-                    if (center.get()) {
-                        PlayerUtils.centerPlayer();
-                    }
-                    Rotations.rotate(yaw, 90);
-                    mc.getConnection().send(new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, blockPos, Direction.UP));
-                    mc.player.swing(InteractionHand.MAIN_HAND);
-                    mc.getConnection().send(new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK, blockPos, Direction.UP));
+                if (slot != -1) {
+                    if (mc.level.getBlockState(blockPos).getBlock() == Blocks.FIRE || mc.level.getBlockState(blockPos).getBlock() == Blocks.SOUL_FIRE) {
+                        float yaw = mc.gameRenderer.getMainCamera().yRot() % 360;
+                        float pitch = mc.gameRenderer.getMainCamera().xRot() % 360;
+                        if (center.get()) {
+                            PlayerUtils.centerPlayer();
+                        }
+                        Rotations.rotate(yaw, 90);
+                        mc.getConnection().send(new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, blockPos, Direction.UP));
+                        mc.player.swing(InteractionHand.MAIN_HAND);
+                        mc.getConnection().send(new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK, blockPos, Direction.UP));
 
-                    Rotations.rotate(yaw, pitch);
+                        Rotations.rotate(yaw, pitch);
+                    }
+                    place(slot);
+                    hasPlacedWater = true;
                 }
-                place(slot);
-                hasPlacedWater = true;
             }
         }
 
         if (extinguish.get()) {
             AtomicInteger blocksPerTick = new AtomicInteger();
             BlockIterator.register(horizontalRadius.get(), verticalRadius.get(), (blockPos, blockState) -> {
-                if (blocksPerTick.get() <= maxBlockPerTick.get()) {
+                if (blocksPerTick.get() < maxBlockPerTick.get()) {
                     if (blockState.getBlock() == Blocks.FIRE || mc.level.getBlockState(blockPos).getBlock() == Blocks.SOUL_FIRE) {
                         extinguishFire(blockPos);
                         blocksPerTick.getAndIncrement();

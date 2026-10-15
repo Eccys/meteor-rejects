@@ -283,10 +283,12 @@ public class WorldGenUtils {
         } else {
             if (structure instanceof Stronghold strongholdStructure) {
                 CPos currentChunkPos = center.toChunkPos();
-                int squaredDistance = Integer.MAX_VALUE;
+                long squaredDistance = Long.MAX_VALUE;
                 CPos closest = new CPos(0, 0);
                 for (CPos stronghold : strongholdStructure.getAllStarts(source, chunkRand)) {
-                    int newSquaredDistance = (currentChunkPos.getX() - stronghold.getX()) * (currentChunkPos.getX() - stronghold.getX()) + (currentChunkPos.getZ() - stronghold.getZ()) * (currentChunkPos.getZ() - stronghold.getZ());
+                    long dx = (long) currentChunkPos.getX() - stronghold.getX();
+                    long dz = (long) currentChunkPos.getZ() - stronghold.getZ();
+                    long newSquaredDistance = dx * dx + dz * dz;
                     if (newSquaredDistance < squaredDistance) {
                         squaredDistance = newSquaredDistance;
                         closest = stronghold;
