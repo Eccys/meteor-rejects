@@ -240,10 +240,18 @@ public class ServerFinderScreen extends WindowScreen implements IServerFinderDon
             if (!isServerInList(pinger.getServerIP()) && filterPass(pinger.getServerInfo())) {
                 synchronized (serverFinderLock) {
                     working++;
-                    multiplayerScreen.getServers().add(new ServerData("Server discovery #" + working, pinger.getServerIP(), ServerData.Type.OTHER), false);
-                    multiplayerScreen.getServers().save();
-                    ((MultiplayerScreenAccessor) multiplayerScreen).getServerListWidget().setSelected(null);
-                    ((MultiplayerScreenAccessor) multiplayerScreen).getServerListWidget().updateOnlineServers(multiplayerScreen.getServers());
+                    String serverIP = pinger.getServerIP();
+                    int foundIndex = working;
+                    if (minecraft != null) {
+                        minecraft.execute(() -> {
+                            if (!isServerInList(serverIP)) {
+                                multiplayerScreen.getServers().add(new ServerData("Server discovery #" + foundIndex, serverIP, ServerData.Type.OTHER), false);
+                                multiplayerScreen.getServers().save();
+                                ((MultiplayerScreenAccessor) multiplayerScreen).getServerListWidget().setSelected(null);
+                                ((MultiplayerScreenAccessor) multiplayerScreen).getServerListWidget().updateOnlineServers(multiplayerScreen.getServers());
+                            }
+                        });
+                    }
                 }
             }
         }

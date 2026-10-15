@@ -123,8 +123,12 @@ public class AutoRename extends Module {
             toggle();
             return;
         }
-        var input = (EditBox) mc.screen.children().get(0);
-        input.setValue(setname);
+        for (var child : mc.screen.children()) {
+            if (child instanceof EditBox input) {
+                input.setValue(setname);
+                return;
+            }
+        }
     }
 
     private String getFirstItemName(ItemStack stack) {
@@ -146,17 +150,18 @@ public class AutoRename extends Module {
 
     private void extractNamed() {
         var inv = mc.player.containerMenu;
-        for (int i = 3; i < 38; i++) {
-            if (inv.getSlot(i).hasItem()) {
+        for (int i = 3; i < 39 && i < inv.slots.size(); i++) {
+            if (!inv.getSlot(i).hasItem()) {
                 InvUtils.shiftClick().fromId(2).toId(i);
                 return;
             }
         }
+        InvUtils.shiftClick().slotId(2);
     }
 
     private void populateAnvil() {
         var inv = mc.player.containerMenu;
-        for (int i = 3; i < 38; i++) {
+        for (int i = 3; i < 39 && i < inv.slots.size(); i++) {
             var sl = inv.getSlot(i);
             if (!sl.hasItem()) continue;
             var st = sl.getItem();

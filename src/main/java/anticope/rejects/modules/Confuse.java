@@ -138,7 +138,7 @@ public class Confuse extends Module {
                 Vec3 addend = new Vec3(x, y, z);
                 Vec3 goal = entityPos.add(addend);
                 if (mc.level.getBlockState(BlockPos.containing(goal.x, goal.y, goal.z)).getBlock() != Blocks.AIR) {
-                    goal = new Vec3(x, playerPos.y, z);
+                    goal = new Vec3(entityPos.x + x, playerPos.y, entityPos.z + z);
                 }
                 if (mc.level.getBlockState(BlockPos.containing(goal.x, goal.y, goal.z)).getBlock() == Blocks.AIR) {
                     hit = mc.level.clip(new ClipContext(mc.player.position(), goal, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, mc.player));

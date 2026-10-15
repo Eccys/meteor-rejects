@@ -13,6 +13,15 @@ public class CenterCommand extends Command {
 
     @Override
     public void build(LiteralArgumentBuilder<ClientSuggestionProvider> builder) {
+        builder.executes(context -> {
+            double x = Mth.floor(mc.player.getX()) + 0.5;
+            double z = Mth.floor(mc.player.getZ()) + 0.5;
+            mc.player.setPos(x, mc.player.getY(), z);
+            mc.player.connection.send(new ServerboundMovePlayerPacket.Pos(mc.player.getX(), mc.player.getY(), mc.player.getZ(), mc.player.onGround(), mc.player.horizontalCollision));
+
+            return SINGLE_SUCCESS;
+        });
+
         builder.then(literal("middle").executes(context -> {
             double x = Mth.floor(mc.player.getX()) + 0.5;
             double z = Mth.floor(mc.player.getZ()) + 0.5;

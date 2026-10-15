@@ -85,6 +85,7 @@ public class AutoCraft extends Module {
                     mc.gameMode.handlePlaceRecipe(currentScreenHandler.containerId, recipe.id(), craftAll.get());
                     mc.gameMode.handleContainerInput(currentScreenHandler.containerId, 0, 1,
                             drop.get() ? ContainerInput.THROW : ContainerInput.QUICK_MOVE, mc.player);
+                    return;
                 }
             }
         }

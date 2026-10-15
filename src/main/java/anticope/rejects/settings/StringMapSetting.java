@@ -57,7 +57,7 @@ public class StringMapSetting extends Setting<Map<String, String>> {
     }
 
     @Override
-    protected CompoundTag save(CompoundTag tag) {
+    public CompoundTag save(CompoundTag tag) {
         CompoundTag valueTag = new CompoundTag();
         for (String key : get().keySet()) {
             valueTag.put(key, StringTag.valueOf(get().get(key)));
@@ -68,7 +68,7 @@ public class StringMapSetting extends Setting<Map<String, String>> {
     }
 
     @Override
-    protected Map<String, String> load(CompoundTag tag) {
+    public Map<String, String> load(CompoundTag tag) {
         get().clear();
 
         tag.getCompound("map").ifPresent(valueTag -> {

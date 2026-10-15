@@ -12,6 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class PlayerEntityMixin {
     @Inject(method = "getFlyingSpeed", at = @At("RETURN"), cancellable = true)
     private void onGetOffGroundSpeed(CallbackInfoReturnable<Float> cir) {
+        if ((Object) this != MeteorClient.mc.player) return;
         cir.setReturnValue(MeteorClient.EVENT_BUS.post(OffGroundSpeedEvent.get(cir.getReturnValueF())).speed);
     }
 }

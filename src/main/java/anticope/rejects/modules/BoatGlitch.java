@@ -71,6 +71,7 @@ public class BoatGlitch extends Module {
 
     @EventHandler
     private void onBoatMove(BoatMoveEvent event) {
+        if (mc.player == null) return;
         if (dismountTicks == 0 && !dontPhase) {
             if (boat != event.boat) {
                 if (boat != null) {
@@ -110,7 +111,9 @@ public class BoatGlitch extends Module {
         if (remountTicks > 0) {
             remountTicks--;
             if (remountTicks == 0) {
-                mc.getConnection().send(new ServerboundInteractPacket(boat.getId(), InteractionHand.MAIN_HAND, boat.position(), false));
+                if (boat != null && mc.getConnection() != null) {
+                    mc.getConnection().send(new ServerboundInteractPacket(boat.getId(), InteractionHand.MAIN_HAND, boat.position(), false));
+                }
                 if (toggleAfter.get()) {
                     toggle();
                 }
@@ -119,6 +122,7 @@ public class BoatGlitch extends Module {
     }
     @EventHandler
     private void onKey(KeyInputEvent event) {
+        if (mc.player == null) return;
         if (event.key() == mc.options.keyShift.getDefaultKey().getValue() && event.action == KeyAction.Press) {
             if (mc.player.getVehicle() instanceof AbstractBoat) {
                 dontPhase = false;

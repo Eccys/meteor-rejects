@@ -53,10 +53,8 @@ public class TerrainExport extends Command {
             if (path == null) throw IO_EXCEPTION.create();
             if (!path.endsWith(".txt"))
                 path += ".txt";
-            try {
-                FileWriter file = new FileWriter(path);
+            try (FileWriter file = new FileWriter(path)) {
                 file.write(stringBuilder.toString().trim());
-                file.close();
             } catch (IOException e) {
                 throw IO_EXCEPTION.create();
             }

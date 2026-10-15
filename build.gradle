@@ -63,7 +63,14 @@ dependencies {
 	// Exploit Preventer (optional)
 	modCompileOnly("com.nikoverflow:exploit-preventer-api:0.0.1")
 
+	testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
+	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
 	configurations.implementation.extendsFrom(configurations.extraLibs)
+}
+
+test {
+	useJUnitPlatform()
 }
 
 processResources {

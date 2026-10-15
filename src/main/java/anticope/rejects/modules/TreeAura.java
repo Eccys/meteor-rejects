@@ -55,22 +55,25 @@ public class TreeAura extends Module {
 
     @EventHandler
     private void onTick(TickEvent.Post event) {
+        if (mc.player == null || mc.level == null) return;
 
         plantTimer--;
         bonemealTimer--;
 
         if (plantTimer <= 0) {
             BlockPos plantPos = findPlantLocation();
-            if (plantPos == null) return;
-            doPlant(plantPos);
-            plantTimer = plantDelay.get();
+            if (plantPos != null) {
+                doPlant(plantPos);
+                plantTimer = plantDelay.get();
+            }
         }
 
         if (bonemealTimer <= 0) {
             BlockPos p = findPlantedSapling();
-            if (p == null) return;
-            doBonemeal(p);
-            bonemealTimer = bonemealDelay.get();
+            if (p != null) {
+                doBonemeal(p);
+                bonemealTimer = bonemealDelay.get();
+            }
         }
     }
 

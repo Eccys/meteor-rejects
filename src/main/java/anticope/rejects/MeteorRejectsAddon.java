@@ -133,14 +133,13 @@ public class MeteorRejectsAddon extends MeteorAddon {
 
     @Override
     public String getCommit() {
-        String commit = FabricLoader
-                .getInstance()
-                .getModContainer("meteor-rejects")
-                .get().getMetadata()
-                .getCustomValue("github:sha")
-                .getAsString();
+        var container = FabricLoader.getInstance().getModContainer("meteor-rejects");
+        if (container.isEmpty()) return null;
+        var customValue = container.get().getMetadata().getCustomValue("github:sha");
+        if (customValue == null) return null;
+        String commit = customValue.getAsString();
         LOG.info("Rejects version: {}", commit);
-        return commit.isEmpty() ? null : commit.trim();
+        return commit == null || commit.isBlank() ? null : commit.trim();
     }
 
     public String getPackage() {

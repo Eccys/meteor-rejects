@@ -151,19 +151,26 @@ public class LegacyServerFinderScreen extends WindowScreen {
                 checked++;
                 if (pingers.get(i).isWorking()) {
                     working++;
+                    String serverIP = pingers.get(i).getServerIP();
+                    int foundIndex = working;
 
-                    if (!isServerInList(pingers.get(i).getServerIP())) {
-                        multiplayerScreen.getServers()
-                                .add(new ServerData("Server discovery " + working,
-                                        pingers.get(i).getServerIP(), ServerData.Type.OTHER), false);
-                        multiplayerScreen.getServers().save();
-                        ((MultiplayerScreenAccessor) multiplayerScreen).getServerListWidget()
-                                .setSelected(null);
-                        ((MultiplayerScreenAccessor) multiplayerScreen).getServerListWidget()
-                                .updateOnlineServers(multiplayerScreen.getServers());
+                    if (minecraft != null) {
+                        minecraft.execute(() -> {
+                            if (!isServerInList(serverIP)) {
+                                multiplayerScreen.getServers()
+                                        .add(new ServerData("Server discovery " + foundIndex,
+                                                serverIP, ServerData.Type.OTHER), false);
+                                multiplayerScreen.getServers().save();
+                                ((MultiplayerScreenAccessor) multiplayerScreen).getServerListWidget()
+                                        .setSelected(null);
+                                ((MultiplayerScreenAccessor) multiplayerScreen).getServerListWidget()
+                                        .updateOnlineServers(multiplayerScreen.getServers());
+                            }
+                        });
                     }
                 }
                 pingers.remove(i);
+                i--;
             }
     }
 

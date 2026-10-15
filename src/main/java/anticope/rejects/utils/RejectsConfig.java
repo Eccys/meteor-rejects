@@ -79,11 +79,17 @@ public class RejectsConfig extends System<RejectsConfig> {
 
     @Override
     public RejectsConfig fromTag(CompoundTag tag) {
-        tag.getString("httpAllowed").ifPresent(s -> httpAllowed = HttpAllowed.valueOf(s));
+        tag.getString("httpAllowed").ifPresent(s -> {
+            try {
+                httpAllowed = HttpAllowed.valueOf(s);
+            } catch (IllegalArgumentException ignored) {
+            }
+        });
         httpUserAgent = tag.getString("httpUserAgent").orElse(httpUserAgent);
         loadSystemFonts = tag.getBoolean("loadSystemFonts").orElse(loadSystemFonts);
         duplicateModuleNames = tag.getBoolean("duplicateModuleNames").orElse(duplicateModuleNames);
 
+        hiddenModules.clear();
         tag.getList("hiddenModules").ifPresent(valueTag -> {
             for (Tag tagI : valueTag) {
                 tagI.asString().ifPresent(hiddenModules::add);

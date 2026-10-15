@@ -60,20 +60,20 @@ public class AutoEnchant extends meteordevelopment.meteorclient.systems.modules.
 
     @EventHandler
     private void onOpenScreen(OpenScreenEvent event) {
-        if (!(Objects.requireNonNull(mc.player).containerMenu instanceof EnchantmentMenu))
+        if (mc.player == null || !(mc.player.containerMenu instanceof EnchantmentMenu))
             return;
         MeteorExecutor.execute(this::autoEnchant);
     }
 
     private void autoEnchant() {
-        if (!(Objects.requireNonNull(mc.player).containerMenu instanceof EnchantmentMenu handler))
+        if (mc.player == null || !(mc.player.containerMenu instanceof EnchantmentMenu handler))
             return;
         if (mc.player.experienceLevel < 30) {
             info("You don't have enough experience levels");
             return;
         }
         while (getEmptySlotCount(handler) > 2 || drop.get()) {
-            if (!(mc.player.containerMenu instanceof EnchantmentMenu)) {
+            if (mc.player == null || mc.gameMode == null || !(mc.player.containerMenu instanceof EnchantmentMenu)) {
                 info("Enchanting table is closed.");
                 break;
             }
@@ -85,14 +85,15 @@ public class AutoEnchant extends meteordevelopment.meteorclient.systems.modules.
                 info("No items found to enchant.");
                 break;
             }
-            Objects.requireNonNull(mc.gameMode).handleInventoryButtonClick(handler.containerId, level.get() - 1);
-            if (getEmptySlotCount(handler) > 2) {
-                InvUtils.shiftClick().slotId(0);
-            } else if (drop.get() && handler.getSlot(0).hasItem()) {
-                // I don't know why an exception LegacyRandomSource is thrown here,
-                // so I used the main thread to drop items.
-                mc.execute(() -> InvUtils.drop().slotId(0));
-            }
+            mc.execute(() -> {
+                if (mc.player == null || mc.gameMode == null || !(mc.player.containerMenu instanceof EnchantmentMenu)) return;
+                mc.gameMode.handleInventoryButtonClick(handler.containerId, level.get() - 1);
+                if (getEmptySlotCount(handler) > 2) {
+                    InvUtils.shiftClick().slotId(0);
+                } else if (drop.get() && handler.getSlot(0).hasItem()) {
+                    InvUtils.drop().slotId(0);
+                }
+            });
 
             /*
             Although the description here indicates that the tick is the unit,
@@ -103,7 +104,8 @@ public class AutoEnchant extends meteordevelopment.meteorclient.systems.modules.
             try {
                 Thread.sleep(delay.get());
             } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+                Thread.currentThread().interrupt();
+                break;
             }
         }
     }
@@ -111,21 +113,21 @@ public class AutoEnchant extends meteordevelopment.meteorclient.systems.modules.
     private boolean fillCanEnchantItem() {
         FindItemResult res = InvUtils.find(stack -> itemWhitelist.get().contains(stack.getItem()));
         if (!res.found()) return false;
-        InvUtils.shiftClick().slot(res.slot());
+        mc.execute(() -> InvUtils.shiftClick().slot(res.slot()));
         return true;
     }
 
     private boolean fillLapisItem() {
         FindItemResult res = InvUtils.find(Items.LAPIS_LAZULI);
         if (!res.found()) return false;
-        InvUtils.shiftClick().slot(res.slot());
+        mc.execute(() -> InvUtils.shiftClick().slot(res.slot()));
         return true;
     }
 
     private int getEmptySlotCount(AbstractContainerMenu handler) {
         int emptySlotCount = 0;
         for (int i = 0; i < handler.slots.size(); i++) {
-            if (!handler.slots.get(i).getItem().getItem().equals(Items.AIR))
+            if (!handler.slots.get(i).getItem().isEmpty())
                 continue;
             emptySlotCount++;
         }

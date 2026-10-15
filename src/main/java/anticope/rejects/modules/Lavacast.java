@@ -98,7 +98,10 @@ public class Lavacast extends Module {
 
     @Override
     public void onActivate() {
-        if (mc.player == null || mc.level == null) toggle();
+        if (mc.player == null || mc.level == null) {
+            toggle();
+            return;
+        }
         tick = 0;
         stage = Stage.None;
         placeFluidPos = getTargetBlockPos();
@@ -125,7 +128,10 @@ public class Lavacast extends Module {
         if (mc.player == null || mc.level == null) return;
         tick++;
         if (shouldBreakOnTick()) return;
-        if (dist < distMin.get()) toggle();
+        if (dist < distMin.get()) {
+            toggle();
+            return;
+        }
         tick = 0;
         if (checkMineBlock()) return;
         switch (stage) {
@@ -239,7 +245,7 @@ public class Lavacast extends Module {
 
     private BlockPos getTargetBlockPos() {
         HitResult blockHit = mc.hitResult;
-        if (blockHit.getType() != HitResult.Type.BLOCK) {
+        if (blockHit == null || blockHit.getType() != HitResult.Type.BLOCK) {
             return null;
         }
         return ((BlockHitResult) blockHit).getBlockPos();

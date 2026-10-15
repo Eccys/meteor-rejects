@@ -45,6 +45,7 @@ public class ItemGenerator extends Module {
 
     @Override
     public void onActivate() {
+        if (mc.player == null) return;
         if(!mc.player.getAbilities().instabuild) {
             error("Creative mode only.");
             this.toggle();
@@ -53,6 +54,7 @@ public class ItemGenerator extends Module {
 
     @EventHandler
     private void onTick(TickEvent.Post event) {
+        if (mc.player == null || mc.player.connection == null) return;
         int stacks = speed.get();
         int size = stackSize.get();
         for(int i = 9; i < 9 + stacks; i++) {
@@ -60,7 +62,7 @@ public class ItemGenerator extends Module {
         }
 
         for(int i = 9; i < 9 + stacks; i++) {
-            InvUtils.drop().slot(i);
+            InvUtils.drop().slotId(i);
         }
     }
 }

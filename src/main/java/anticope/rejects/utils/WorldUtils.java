@@ -18,11 +18,11 @@ public class WorldUtils {
     public static List<BlockPos> getSphere(BlockPos centerPos, int radius, int height) {
         ArrayList<BlockPos> blocks = new ArrayList<>();
 
-        for (int i = centerPos.getX() - radius; i < centerPos.getX() + radius; i++) {
-            for (int j = centerPos.getY() - height; j < centerPos.getY() + height; j++) {
-                for (int k = centerPos.getZ() - radius; k < centerPos.getZ() + radius; k++) {
+        for (int i = centerPos.getX() - radius; i <= centerPos.getX() + radius; i++) {
+            for (int j = centerPos.getY() - height; j <= centerPos.getY() + height; j++) {
+                for (int k = centerPos.getZ() - radius; k <= centerPos.getZ() + radius; k++) {
                     BlockPos pos = new BlockPos(i, j, k);
-                    if (distanceBetween(centerPos, pos) <= radius && !blocks.contains(pos)) blocks.add(pos);
+                    if (distanceBetween(centerPos, pos) <= radius) blocks.add(pos);
                 }
             }
         }

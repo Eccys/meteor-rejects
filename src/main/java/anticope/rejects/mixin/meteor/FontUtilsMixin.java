@@ -19,7 +19,8 @@ public class FontUtilsMixin {
     private static void onGetSearchPaths(CallbackInfoReturnable<Set<String>> info) {
         if (!RejectsConfig.get().loadSystemFonts) {
             File dir = new File(MeteorClient.FOLDER, "fonts");
-            info.setReturnValue(!dir.mkdirs() ? Collections.singleton(dir.getAbsolutePath()) : new HashSet<>());
+            dir.mkdirs();
+            info.setReturnValue(new HashSet<>(Collections.singleton(dir.getAbsolutePath())));
         }
     }
 }
