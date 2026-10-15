@@ -135,6 +135,21 @@ class RejectsCoreTest {
 
         Seed defaultVersionSeed = new Seed(-999L, null);
         assertEquals(MCVersion.latest(), defaultVersionSeed.version);
+
+        Seed nullSeed = new Seed(null, null);
+        assertEquals(0L, nullSeed.seed);
+        assertEquals(MCVersion.latest(), nullSeed.version);
+        assertNotNull(nullSeed.toTag());
+        assertNotNull(nullSeed.toText());
+
+        Seed fromNullTag = Seed.fromTag(null);
+        assertEquals(0L, fromNullTag.seed);
+        assertEquals(MCVersion.latest(), fromNullTag.version);
+
+        assertEquals(0L, anticope.rejects.utils.seeds.Seeds.toSeed(null));
+        assertEquals(0L, anticope.rejects.utils.seeds.Seeds.toSeed("   "));
+        assertEquals(42L, anticope.rejects.utils.seeds.Seeds.toSeed("  42  "));
+        assertEquals("abc".hashCode(), anticope.rejects.utils.seeds.Seeds.toSeed("  abc  "));
     }
 
     @Test
@@ -144,6 +159,8 @@ class RejectsCoreTest {
         assertEquals(24, pwd.length());
         assertTrue(pwd.matches("[a-zA-Z0-9_]{24}"));
         assertEquals("", RejectsUtils.getRandomPassword(0));
+        assertEquals("", RejectsUtils.getRandomPassword(-5));
+        assertEquals("", RejectsUtils.getModuleName(null));
 
         try (ServerSocket server = new ServerSocket(0, 5, InetAddress.getLoopbackAddress())) {
             int openPort = server.getLocalPort();

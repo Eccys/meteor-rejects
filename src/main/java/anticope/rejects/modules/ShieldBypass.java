@@ -15,6 +15,7 @@ import meteordevelopment.orbit.EventHandler;
 import net.minecraft.network.protocol.game.ServerboundAttackPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.network.protocol.game.ServerboundSwingPacket;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.AxeItem;
@@ -39,6 +40,7 @@ public class ShieldBypass extends Module {
 
     @EventHandler
     private void onMouseButton(MouseClickEvent event) {
+        if (mc.player == null || mc.level == null) return;
         if (Modules.get().isActive(KillAura.class)) return;
         if (mc.screen == null && !mc.player.isUsingItem() && event.action == KeyAction.Press && event.button() == GLFW_MOUSE_BUTTON_LEFT) {
             if (mc.hitResult instanceof EntityHitResult result) {
@@ -54,6 +56,7 @@ public class ShieldBypass extends Module {
     }
 
     public void bypass(Entity target, Cancellable event) {
+        if (mc.player == null || mc.level == null || mc.getConnection() == null) return;
         if (target instanceof LivingEntity e && e.isBlocking()) {
             if (ignoreAxe.get() && InvUtils.testInMainHand(i -> i.getItem() instanceof AxeItem)) return;
 
@@ -87,7 +90,8 @@ public class ShieldBypass extends Module {
             mc.getConnection().send(new ServerboundMovePlayerPacket.Pos(newPos.x(), newPos.y(), newPos.z(), true, false));
 
             mc.getConnection().send(new ServerboundAttackPacket(e.getId()));
-            mc.getConnection().send(new ServerboundSwingPacket(mc.player.getUsedItemHand()));
+            InteractionHand hand = mc.player.getUsedItemHand() != null ? mc.player.getUsedItemHand() : InteractionHand.MAIN_HAND;
+            mc.getConnection().send(new ServerboundSwingPacket(hand));
             mc.player.resetOnlyAttackStrengthTicker();
 
             mc.getConnection().send(new ServerboundMovePlayerPacket.Pos(mc.player.getX(), mc.player.getY(), mc.player.getZ(), true, mc.player.horizontalCollision));

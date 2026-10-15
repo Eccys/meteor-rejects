@@ -14,6 +14,7 @@ public class DebugRendererMixin {
 
     @Inject(method = "emitGizmos", at = @At("HEAD"))
     public void render(Frustum frustum, double d, double e, double f, float g, CallbackInfo ci) {
+        if (Modules.get() == null) return;
         DebugRender debugRender = Modules.get().get(DebugRender.class);
         if (debugRender != null && debugRender.isActive()) {
             debugRender.render(frustum, d, e, f, g);

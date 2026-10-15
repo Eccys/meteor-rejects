@@ -64,6 +64,7 @@ public class ExtraElytra extends Module {
 
     @EventHandler
     private void onTick(TickEvent.Post event) {
+        if (mc.player == null || mc.player.connection == null) return;
         if (jumpTimer > 0)
             jumpTimer--;
 
@@ -86,6 +87,7 @@ public class ExtraElytra extends Module {
     }
 
     private void sendStartStopPacket() {
+        if (mc.player == null || mc.player.connection == null) return;
         ServerboundPlayerCommandPacket packet = new ServerboundPlayerCommandPacket(mc.player,
                 ServerboundPlayerCommandPacket.Action.START_FALL_FLYING);
         mc.player.connection.send(packet);

@@ -49,8 +49,8 @@ public class ObsidianFarm extends Module {
             if (pickAxe == -1) {
                 if (this.isActive()) {
                     this.toggle();
-                    return;
                 }
+                return;
             }
             mc.player.getInventory().setSelectedSlot(pickAxe);
         }
@@ -78,7 +78,6 @@ public class ObsidianFarm extends Module {
         }
 
         Optional<BlockPos> result = blocksList.stream()
-                .parallel()
                 .filter(blockPos -> mc.level.getBlockState(blockPos).getBlock() == Blocks.OBSIDIAN)
                 .min(Comparator.comparingDouble(blockPos -> mc.player.distanceToSqr(blockPos.getX(), blockPos.getY(), blockPos.getZ())));
         if (result.isPresent()) return result.get();
@@ -94,7 +93,6 @@ public class ObsidianFarm extends Module {
         }
 
         Optional<BlockPos> result2 = blocksList.stream()
-                .parallel()
                 .filter(blockPos -> !mc.player.blockPosition().below().equals(blockPos))
                 .filter(blockPos -> mc.level.getBlockState(blockPos).getBlock() == Blocks.OBSIDIAN)
                 .min(Comparator.comparingDouble(blockPos -> mc.player.distanceToSqr(blockPos.getX(), blockPos.getY(), blockPos.getZ())));

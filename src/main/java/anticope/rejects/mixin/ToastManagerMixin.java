@@ -14,6 +14,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class ToastManagerMixin {
     @Inject(method = "addToast", at = @At("HEAD"), cancellable = true)
     public void preventAdd(Toast toast, CallbackInfo ci) {
-        if (((INoRender) Modules.get().get(NoRender.class)).disableToasts()) ci.cancel();
+        if (Modules.get() == null) return;
+        NoRender noRender = Modules.get().get(NoRender.class);
+        if (noRender != null && ((INoRender) noRender).disableToasts()) ci.cancel();
     }
 }

@@ -46,7 +46,7 @@ public class GhostMode extends Module {
 
     @EventHandler
     private void onTick(TickEvent.Pre event) {
-        if (!active) return;
+        if (!active || mc.player == null) return;
         if (mc.player.getHealth() < 1f) mc.player.setHealth(20f);
         if (fullFood.get() && mc.player.getFoodData().getFoodLevel() < 20) {
             mc.player.getFoodData().setFoodLevel(20);

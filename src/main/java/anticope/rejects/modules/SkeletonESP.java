@@ -54,6 +54,7 @@ public class SkeletonESP extends Module {
 
     @EventHandler
     private void onRender(Render3DEvent event) {
+        if (mc.level == null || mc.player == null) return;
         float tickDelta = event.tickDelta;
         int rotationHoldTicks = Config.get().rotationHoldTicks.get();
 
@@ -67,7 +68,7 @@ public class SkeletonESP extends Module {
             Player player = (Player) entity;
 
             Vec3 footPos = getEntityRenderPosition(player, tickDelta);
-            AvatarRenderer livingEntityRenderer = (AvatarRenderer) mc.getEntityRenderDispatcher().getRenderer(player);
+            if (!(mc.getEntityRenderDispatcher().getRenderer(player) instanceof AvatarRenderer livingEntityRenderer)) return;
             PlayerModel playerModel = (PlayerModel) livingEntityRenderer.getModel();
 
             float bodyYaw = Mth.rotLerp(tickDelta, player.yBodyRotO, player.yBodyRot);

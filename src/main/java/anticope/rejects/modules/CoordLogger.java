@@ -93,12 +93,14 @@ public class CoordLogger extends Module {
 
     @EventHandler
     private void onPacketReceive(PacketEvent.Receive event) {
+        if (mc.level == null || mc.player == null) return;
         // Teleports
         if (event.packet instanceof ClientboundTeleportEntityPacket) {
             ClientboundTeleportEntityPacket packet = (ClientboundTeleportEntityPacket) event.packet;
             
             try {
                 Entity entity = mc.level.getEntity(packet.id());
+                if (entity == null) return;
                 
                 // Player teleport
                 if (entity.getType().equals(EntityType.PLAYER) && players.get()) {

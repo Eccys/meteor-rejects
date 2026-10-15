@@ -35,6 +35,7 @@ public class TerrainExport extends Command {
     @Override
     public void build(LiteralArgumentBuilder<ClientSuggestionProvider> builder) {
         builder.then(argument("distance", IntegerArgumentType.integer(1)).executes(context -> {
+            if (mc.player == null || mc.level == null) return SINGLE_SUCCESS;
             int distance = IntegerArgumentType.getInteger(context, "distance");
 
             StringBuilder stringBuilder = new StringBuilder();

@@ -17,12 +17,14 @@ public class TeleportCommand extends Command {
     @Override
     public void build(LiteralArgumentBuilder<ClientSuggestionProvider> builder) {
         builder.then(argument("pos", ClientPosArgumentType.pos()).executes(ctx -> {
+            if (mc.player == null) return SINGLE_SUCCESS;
             Vec3 pos = ClientPosArgumentType.getPos(ctx, "pos");
             mc.player.absSnapTo(pos.x(), pos.y(), pos.z());
             return SINGLE_SUCCESS;
         }));
 
         builder.then(argument("pos", ClientPosArgumentType.pos()).then(argument("yaw", FloatArgumentType.floatArg()).then(argument("pitch", FloatArgumentType.floatArg()).executes(ctx -> {
+            if (mc.player == null) return SINGLE_SUCCESS;
             Vec3 pos = ClientPosArgumentType.getPos(ctx, "pos");
             float yaw = FloatArgumentType.getFloat(ctx, "yaw");
             float pitch = FloatArgumentType.getFloat(ctx, "pitch");

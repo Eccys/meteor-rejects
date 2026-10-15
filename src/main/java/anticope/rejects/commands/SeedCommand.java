@@ -31,6 +31,7 @@ public class SeedCommand extends Command {
 
         builder.then(literal("list").executes(ctx -> {
             Seeds.get().seeds.forEach((name, seed) -> {
+                if (seed == null) return;
                 MutableComponent text = Component.literal(name + " ");
                 text.append(seed.toText());
                 info(text);

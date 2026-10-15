@@ -26,9 +26,10 @@ public class GamemodeNotifier extends Module {
 
     @EventHandler
     public void onPacket(PacketEvent.Receive event) {
+        if (mc.getConnection() == null) return;
         if (event.packet instanceof ClientboundPlayerInfoUpdatePacket packet) {
+            if (!packet.actions().contains(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_GAME_MODE)) return;
             for (ClientboundPlayerInfoUpdatePacket.Entry entry : packet.entries()) {
-                if (!packet.actions().contains(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_GAME_MODE)) continue;
                 PlayerInfo entry1 = mc.getConnection().getPlayerInfo(entry.profileId());
                 if (entry1 == null) continue;
                 GameType gameMode = entry.gameMode();

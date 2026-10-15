@@ -28,7 +28,7 @@ public class Rendering extends Module {
 			.description("Render structure void blocks.")
 			.defaultValue(true)
             .onChanged(onChanged -> {
-                if(this.isActive()) {
+                if (this.isActive() && mc.levelRenderer != null) {
                     mc.levelRenderer.allChanged();
                 }
             })
@@ -72,12 +72,13 @@ public class Rendering extends Module {
 
     @Override
     public void onActivate() {
-        mc.levelRenderer.allChanged();
+        if (mc.levelRenderer != null) mc.levelRenderer.allChanged();
+        onChanged(shaderEnum.get());
     }
 
     @Override
     public void onDeactivate() {
-        mc.levelRenderer.allChanged();
+        if (mc.levelRenderer != null) mc.levelRenderer.allChanged();
     }
 
     public void onChanged(Shader s) {

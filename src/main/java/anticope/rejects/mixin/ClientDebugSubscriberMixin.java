@@ -10,17 +10,20 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Mixin(ClientDebugSubscriber.class)
 public class ClientDebugSubscriberMixin {
 
-    @Inject(method = "requestedSubscriptions", at = @At("RETURN"))
+    @Inject(method = "requestedSubscriptions", at = @At("RETURN"), cancellable = true)
     private void addModuleSubscriptions(CallbackInfoReturnable<Set<DebugSubscription<?>>> cir) {
+        if (Modules.get() == null) return;
         DebugRender module = Modules.get().get(DebugRender.class);
         if (module == null || !module.isActive()) return;
 
-        Set<DebugSubscription<?>> set = cir.getReturnValue();
+        Set<DebugSubscription<?>> orig = cir.getReturnValue();
+        Set<DebugSubscription<?>> set = orig != null ? new HashSet<>(orig) : new HashSet<>();
         set.add(DebugSubscriptions.BEES);
         set.add(DebugSubscriptions.BEE_HIVES);
         set.add(DebugSubscriptions.BRAINS);
@@ -36,6 +39,7 @@ public class ClientDebugSubscriberMixin {
         set.add(DebugSubscriptions.GAME_EVENT_LISTENERS);
         set.add(DebugSubscriptions.NEIGHBOR_UPDATES);
         set.add(DebugSubscriptions.GAME_EVENTS);
+        cir.setReturnValue(set);
     }
 }
 
