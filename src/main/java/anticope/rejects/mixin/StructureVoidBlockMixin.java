@@ -25,6 +25,7 @@ public abstract class StructureVoidBlockMixin extends Block {
 
 	@Override
 	public boolean skipRendering(BlockState state, BlockState neighbor, Direction facing) {
+		if (Modules.get() == null) return true;
 		Rendering renderingModule = Modules.get().get(Rendering.class);
 		return !(renderingModule != null && renderingModule.renderStructureVoid());
 	}

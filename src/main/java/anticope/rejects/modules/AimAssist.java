@@ -98,8 +98,17 @@ public class AimAssist extends Module {
         super(MeteorRejectsAddon.CATEGORY, "aim-assist", "Automatically aims at entities.");
     }
 
+    @Override
+    public void onDeactivate() {
+        target = null;
+    }
+
     @EventHandler
     private void onTick(TickEvent.Post event) {
+        if (mc.player == null || mc.level == null) {
+            target = null;
+            return;
+        }
         target = TargetUtils.get(entity -> {
             if (!entity.isAlive()) return false;
             if (!PlayerUtils.isWithin(entity, range.get())) return false;
@@ -112,7 +121,7 @@ public class AimAssist extends Module {
 
     @EventHandler
     private void onRender(Render3DEvent event) {
-        if (target != null) aim(target, event.tickDelta, instant.get());
+        if (mc.player != null && target != null) aim(target, event.tickDelta, instant.get());
     }
 
     private void aim(Entity target, double delta, boolean instant) {
@@ -147,13 +156,13 @@ public class AimAssist extends Module {
         angle = -Math.toDegrees(Math.atan2(deltaY, idk));
 
         if (instant) {
-            mc.player.setXRot((float) angle);
+            mc.player.setXRot(Mth.clamp((float) angle, -90.0f, 90.0f));
         } else {
             deltaAngle = Mth.wrapDegrees(angle - mc.player.getXRot());
             toRotate = speed.get() * (deltaAngle >= 0 ? 1 : -1) * delta;
             if ((toRotate >= 0 && toRotate > deltaAngle) || (toRotate < 0 && toRotate < deltaAngle))
                 toRotate = deltaAngle;
-            mc.player.setXRot(mc.player.getXRot() + (float) toRotate);
+            mc.player.setXRot(Mth.clamp(mc.player.getXRot() + (float) toRotate, -90.0f, 90.0f));
         }
     }
 

@@ -104,6 +104,8 @@ public class AutoTNT extends Module {
     @Override
     public void onDeactivate() {
         igniteTick = 0;
+        for (BlockPos.MutableBlockPos blockPos : blocksToIgnite) ignitePool.free(blockPos);
+        blocksToIgnite.clear();
     }
 
     @EventHandler
@@ -153,6 +155,7 @@ public class AutoTNT extends Module {
     }
 
     private void ignite(BlockPos pos, FindItemResult item) {
+        if (mc.player == null || mc.gameMode == null) return;
         Runnable action = () -> {
             InvUtils.swap(item.slot(), true);
             mc.gameMode.useItemOn(mc.player, InteractionHand.MAIN_HAND, new BlockHitResult(new Vec3(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5), Direction.UP, pos, true));

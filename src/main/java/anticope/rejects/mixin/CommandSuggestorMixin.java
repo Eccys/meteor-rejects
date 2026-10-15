@@ -14,6 +14,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class CommandSuggestorMixin {
     @Inject(method = "extractRenderState", at = @At(value = "HEAD"), cancellable = true)
     public void onRenderCommandSuggestion(GuiGraphicsExtractor context, int mouseX, int mouseY, CallbackInfo info) {
-        if (((INoRender) Modules.get().get(NoRender.class)).noCommandSuggestions()) info.cancel();
+        if (Modules.get() == null) return;
+        NoRender noRender = Modules.get().get(NoRender.class);
+        if (noRender != null && ((INoRender) noRender).noCommandSuggestions()) info.cancel();
     }
 }

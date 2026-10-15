@@ -36,6 +36,7 @@ public class GiveCommand extends Command {
     public void build(LiteralArgumentBuilder<ClientSuggestionProvider> builder) {
         // TODO : finish this
         builder.then(literal("egg").executes(ctx -> {
+            if (mc.player == null) return SINGLE_SUCCESS;
             ItemStack inHand = mc.player.getMainHandItem();
             ItemStack item = new ItemStack(Items.STRIDER_SPAWN_EGG);
             CompoundTag ct = new CompoundTag();
@@ -78,6 +79,7 @@ public class GiveCommand extends Command {
                     return createHolo(message, pos.x, pos.y, pos.z);
                 })))
             .then(argument("message", StringArgumentType.greedyString()).executes(ctx -> {
+                if (mc.player == null) return SINGLE_SUCCESS;
                 String message = ctx.getArgument("message", String.class).replace("&", "\247");
                 return createHolo(message, mc.player.getX(), mc.player.getY(), mc.player.getZ());
             }))

@@ -48,7 +48,6 @@ public class GiveUtils {
         Identifier.parse("ender_dragon"),
         Identifier.parse("wither"),
         Identifier.parse("iron_golem"),
-        Identifier.parse("ender_dragon"),
         Identifier.parse("tnt_minecart"),
         Identifier.parse("lightning_bolt"));
 
@@ -74,6 +73,7 @@ public class GiveUtils {
     private static Registry<Enchantment> enchantmentRegistry;
 
     public static void giveItem(ItemStack item) throws CommandSyntaxException {
+        if (mc.player == null || item == null) return;
         if (!mc.player.getAbilities().instabuild) throw NOT_IN_CREATIVE.create();
 
         if (!mc.player.getInventory().add(item)) {
@@ -116,7 +116,7 @@ public class GiveUtils {
         PRESETS.put("force_op", (preview) -> {
             if (preview) return Items.SPIDER_SPAWN_EGG.getDefaultInstance();
             ItemStack item = Items.SPIDER_SPAWN_EGG.getDefaultInstance();
-            String nick = mc.player.getName().getString();
+            String nick = mc.player != null ? mc.player.getName().getString() : "";
 
             try {
                 CompoundTag compound = TagParser.parseCompoundFully("{Time:1,BlockState:{Name:\"minecraft:spawner\"},id:\"minecraft:falling_block\",TileEntityData:{SpawnCount:20,SpawnData:{id:\"minecraft:villager\",Passengers:[{Time:1,BlockState:{Name:\"minecraft:redstone_block\"},id:\"minecraft:falling_block\",Passengers:[{id:\"minecraft:fox\",Passengers:[{Time:1,BlockState:{Name:\"minecraft:activator_rail\"},id:\"minecraft:falling_block\",Passengers:[{Command:\"execute as @e run op "+nick+"\",id:\"minecraft:command_block_minecart\"}]}],NoAI:1b,Health:1.0f,ActiveEffects:[{Duration:1000,Id:20b,Amplifier:4b}]}]}],NoAI:1b,Health:1.0f,ActiveEffects:[{Duration:1000,Id:20b,Amplifier:4b}]},MaxSpawnDelay:100,SpawnRange:10,Delay:1,MinSpawnDelay:100}}");
@@ -131,14 +131,12 @@ public class GiveUtils {
             if (preview) return Items.LINGERING_POTION.getDefaultInstance();
             ItemStack stack = Items.LINGERING_POTION.getDefaultInstance();
             ArrayList<MobEffectInstance> effects = new ArrayList<>();
-            for(int i = 1; i <= 31; i++)
-            {
-                MobEffect effect =
-                        BuiltInRegistries.MOB_EFFECT.get(i).get().value();
-                Holder<MobEffect> entry =
-                        BuiltInRegistries.MOB_EFFECT.wrapAsHolder(effect);
-                effects.add(new MobEffectInstance(entry, Integer.MAX_VALUE,
-                        Integer.MAX_VALUE));
+            for (int i = 1; i <= 31; i++) {
+                BuiltInRegistries.MOB_EFFECT.get(i).ifPresent(holder -> {
+                    MobEffect effect = holder.value();
+                    Holder<MobEffect> entry = BuiltInRegistries.MOB_EFFECT.wrapAsHolder(effect);
+                    effects.add(new MobEffectInstance(entry, Integer.MAX_VALUE, Integer.MAX_VALUE));
+                });
             }
 
             stack.set(DataComponents.POTION_CONTENTS, new PotionContents(Optional.empty(), Optional.empty(),
@@ -222,7 +220,8 @@ public class GiveUtils {
     }
 
     public static ItemStack getPreset(String name, boolean preview) {
-        return PRESETS.get(name).apply(preview);
+        Function<Boolean, ItemStack> factory = PRESETS.get(name);
+        return factory != null ? factory.apply(preview) : ItemStack.EMPTY;
     }
 
     public static ItemStack getPreset(String name) {

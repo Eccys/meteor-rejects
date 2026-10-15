@@ -17,7 +17,7 @@ import static meteordevelopment.meteorclient.MeteorClient.mc;
 public class ClientCommonNetworkHandlerMixin {
 	@Inject(method = "onDisconnect", at = @At("HEAD"), cancellable = true)
 	private void onDisconnected(DisconnectionDetails info, CallbackInfo ci) {
-		if (Modules.get().isActive(SilentDisconnect.class) && mc.level != null && mc.player != null) {
+		if (Modules.get() != null && Modules.get().isActive(SilentDisconnect.class) && mc.level != null && mc.player != null) {
 			ChatUtils.info(Component.translatable("disconnect.lost").getString() + ":");
 			ChatUtils.sendMsg(info.reason());
 			ci.cancel();

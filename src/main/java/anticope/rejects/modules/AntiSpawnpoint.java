@@ -31,7 +31,7 @@ public class AntiSpawnpoint extends Module {
 
     @EventHandler
     private void onSendPacket(PacketEvent.Send event) {
-        if (mc.level == null) return;
+        if (mc.level == null || mc.player == null) return;
         if(!(event.packet instanceof ServerboundUseItemOnPacket)) return;
 
         BlockPos blockPos = ((ServerboundUseItemOnPacket) event.packet).getHitResult().getBlockPos();
@@ -40,7 +40,6 @@ public class AntiSpawnpoint extends Module {
         boolean BlockIsBed = mc.level.getBlockState(blockPos).getBlock() instanceof BedBlock;
         boolean BlockIsAnchor = mc.level.getBlockState(blockPos).getBlock().equals(Blocks.RESPAWN_ANCHOR);
 
-        assert mc.player != null;
         if (fakeUse.get()) {
             if (BlockIsBed && IsOverWorld) {
                 mc.player.swing(InteractionHand.MAIN_HAND);
