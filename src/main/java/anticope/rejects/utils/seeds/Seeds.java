@@ -20,7 +20,7 @@ import net.minecraft.network.chat.MutableComponent;
 import static meteordevelopment.meteorclient.MeteorClient.mc;
 
 public class Seeds extends System<Seeds> {
-    private static final Seeds INSTANCE = new Seeds();
+    private static Seeds INSTANCE;
 
     public HashMap<String, Seed> seeds = new HashMap<>();
 
@@ -31,11 +31,12 @@ public class Seeds extends System<Seeds> {
     }
 
     public static Seeds get() {
+        if (INSTANCE == null) INSTANCE = new Seeds();
         return INSTANCE;
     }
 
     public Seed getSeed() {
-        if (mc.hasSingleplayerServer() && mc.getSingleplayerServer() != null) {
+        if (mc.hasSingleplayerServer() && mc.getSingleplayerServer() != null && mc.getSingleplayerServer().overworld() != null) {
             MCVersion version = MCVersion.fromString(mc.getSingleplayerServer().getServerVersion());
             if (version == null)
                 version = MCVersion.latest();
@@ -46,7 +47,7 @@ public class Seeds extends System<Seeds> {
     }
 
     public void setSeed(String seed, MCVersion version) {
-        if (mc.hasSingleplayerServer()) return;
+        if (mc.hasSingleplayerServer() || seed == null) return;
 
         long numSeed = toSeed(seed);
         seeds.put(Utils.getWorldName(), new Seed(numSeed, version));
@@ -54,15 +55,15 @@ public class Seeds extends System<Seeds> {
     }
 
     public void setSeed(String seed) {
-        if (mc.hasSingleplayerServer()) return;
+        if (mc.hasSingleplayerServer() || seed == null) return;
 
         ServerData server = mc.getCurrentServer();
         MCVersion ver = null;
-        if (server != null)
+        if (server != null && server.version != null)
             ver = MCVersion.fromString(server.version.getString());
         if (ver == null) {
             String targetVer = "unknown";
-            if (server != null) targetVer = server.version.getString();
+            if (server != null && server.version != null) targetVer = server.version.getString();
             sendInvalidVersionWarning(seed, targetVer);
             ver = MCVersion.latest();
         }
@@ -73,7 +74,7 @@ public class Seeds extends System<Seeds> {
     public CompoundTag toTag() {
         CompoundTag tag = new CompoundTag();
         seeds.forEach((key, seed) -> {
-            if (seed == null) return;
+            if (key == null || seed == null) return;
             tag.put(key, seed.toTag());
         });
         return tag;
@@ -81,6 +82,7 @@ public class Seeds extends System<Seeds> {
 
     @Override
     public Seeds fromTag(CompoundTag tag) {
+        if (tag == null) return this;
         tag.keySet().forEach(key -> {
             tag.getCompound(key).ifPresent(compound -> seeds.put(key, Seed.fromTag(compound)));
         });
@@ -88,11 +90,14 @@ public class Seeds extends System<Seeds> {
     }
 
     // https://minecraft.wiki/w/Seed_(level_generation)#Java_Edition
-    private static long toSeed(String inSeed) {
+    public static long toSeed(String inSeed) {
+        if (inSeed == null) return 0L;
+        String trimmed = inSeed.strip();
+        if (trimmed.isEmpty()) return 0L;
         try {
-            return Long.parseLong(inSeed);
+            return Long.parseLong(trimmed);
         } catch (NumberFormatException e) {
-            return inSeed.strip().hashCode();
+            return trimmed.hashCode();
         }
     }
 

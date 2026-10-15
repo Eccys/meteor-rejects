@@ -29,27 +29,33 @@ public class RejectsUtils {
     }
 
     public static String getModuleName(String name) {
-        int dupe = 0;
+        if (name == null) return "";
         Modules modules = Modules.get();
         if (modules == null) {
             MeteorRejectsAddon.LOG.warn("Module instantiation before Modules initialized.");
             return name;
         }
-        for (Module module : modules.getAll()) {
-            if (module.name.equals(name)) {
-                dupe++;
-                break;
+        String candidate = name;
+        while (true) {
+            boolean found = false;
+            for (Module module : modules.getAll()) {
+                if (candidate.equals(module.name)) {
+                    found = true;
+                    break;
+                }
             }
+            if (!found) return candidate;
+            candidate = candidate + "*";
         }
-        return dupe == 0 ? name : getModuleName(name + "*".repeat(dupe));
     }
 
     public static String getRandomPassword(int num) {
+        if (num <= 0) return "";
         String str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
         Random random = new Random();
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(num);
         for (int i = 0; i < num; i++) {
-            int number = random.nextInt(63);
+            int number = random.nextInt(str.length());
             sb.append(str.charAt(number));
         }
         return sb.toString();

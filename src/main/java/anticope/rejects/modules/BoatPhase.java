@@ -89,11 +89,13 @@ public class BoatPhase extends Module {
     public void onDeactivate() {
         if (boat != null) {
             boat.noPhysics = false;
+            boat = null;
         }
     }
 
     @EventHandler
     private void onBoatMove(BoatMoveEvent event) {
+        if (mc.player == null) return;
         if (mc.player.getVehicle() instanceof AbstractBoat) {
             if (boat != mc.player.getVehicle()) {
                 if (boat != null) {
@@ -101,7 +103,12 @@ public class BoatPhase extends Module {
                 }
                 boat = (AbstractBoat) mc.player.getVehicle();
             }
-        } else boat = null;
+        } else {
+            if (boat != null) {
+                boat.noPhysics = false;
+            }
+            boat = null;
+        }
 
         if (boat != null) {
             boat.noPhysics = true;

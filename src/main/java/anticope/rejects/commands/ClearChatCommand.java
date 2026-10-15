@@ -12,7 +12,9 @@ public class ClearChatCommand extends Command {
     @Override
     public void build(LiteralArgumentBuilder<ClientSuggestionProvider> builder) {
         builder.executes(context -> {
-            mc.gui.getChat().clearMessages(false);
+            if (mc.gui != null && mc.gui.getChat() != null) {
+                mc.gui.getChat().clearMessages(false);
+            }
             return SINGLE_SUCCESS;
         });
     }
