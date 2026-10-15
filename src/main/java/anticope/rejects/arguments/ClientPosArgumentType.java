@@ -16,7 +16,6 @@ import net.minecraft.commands.arguments.coordinates.WorldCoordinate;
 import net.minecraft.world.phys.Vec3;
 
 public class ClientPosArgumentType implements ArgumentType<Vec3> {
-    private static final Minecraft mc = Minecraft.getInstance();
 
     public static ClientPosArgumentType pos() {
         return new ClientPosArgumentType();
@@ -59,9 +58,14 @@ public class ClientPosArgumentType implements ArgumentType<Vec3> {
             throw Vec3Argument.ERROR_NOT_COMPLETE.createWithContext(reader);
         }
 
-        x = coordinateArgument.get(mc.player.getX());
-        y = coordinateArgument2.get(mc.player.getY());
-        z = coordinateArgument3.get(mc.player.getZ());
+        Minecraft mc = Minecraft.getInstance();
+        double baseX = mc != null && mc.player != null ? mc.player.getX() : 0.0;
+        double baseY = mc != null && mc.player != null ? mc.player.getY() : 0.0;
+        double baseZ = mc != null && mc.player != null ? mc.player.getZ() : 0.0;
+
+        x = coordinateArgument.get(baseX);
+        y = coordinateArgument2.get(baseY);
+        z = coordinateArgument3.get(baseZ);
 
         return new Vec3(x,y,z);
     }

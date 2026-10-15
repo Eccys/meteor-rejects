@@ -149,17 +149,28 @@ public class ChestAura extends Module {
     public class CloseListener {
         @EventHandler(priority = EventPriority.HIGH)
         private void onInventory(InventoryEvent event) {
+            if (mc.player == null) {
+                MeteorClient.EVENT_BUS.unsubscribe(this);
+                return;
+            }
             AbstractContainerMenu handler = mc.player.containerMenu;
             if (event.packet.containerId() == handler.containerId) {
                 switch (closeCondition.get()) {
                     case IfEmpty -> {
                         NonNullList<ItemStack> stacks = NonNullList.create();
-                        IntStream.range(0, SlotUtils.indexToId(SlotUtils.MAIN_START)).mapToObj(handler.slots::get).map(Slot::getItem).forEach(stacks::add);
+                        int maxSlot = Math.max(0, Math.min(handler.slots.size(), SlotUtils.indexToId(SlotUtils.MAIN_START)));
+                        IntStream.range(0, maxSlot).mapToObj(handler.slots::get).map(Slot::getItem).forEach(stacks::add);
                         if (stacks.stream().allMatch(ItemStack::isEmpty)) mc.player.closeContainer();
                     }
                     case Always -> mc.player.closeContainer();
-                    case AfterSteal ->
-                            ((IInventoryTweaks) Modules.get().get(InventoryTweaks.class)).stealCallback(() -> mc.player.closeContainer());
+                    case AfterSteal -> {
+                        InventoryTweaks invTweaks = Modules.get() != null ? Modules.get().get(InventoryTweaks.class) : null;
+                        if (invTweaks != null) {
+                            ((IInventoryTweaks) invTweaks).stealCallback(() -> {
+                                if (mc.player != null) mc.player.closeContainer();
+                            });
+                        }
+                    }
                 }
             }
             MeteorClient.EVENT_BUS.unsubscribe(this);

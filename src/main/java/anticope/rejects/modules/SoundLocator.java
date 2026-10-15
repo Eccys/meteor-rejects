@@ -90,16 +90,23 @@ public class SoundLocator extends Module {
         super(MeteorRejectsAddon.CATEGORY, "sound-locator", "Prints locations of sound events.");
     }
 
-    private List<Vec3> renderPos = new ArrayList<Vec3>();
-    private List<Integer> delay = new ArrayList<Integer>();
+    private final List<Vec3> renderPos = new java.util.concurrent.CopyOnWriteArrayList<>();
+    private final List<Integer> delay = new java.util.concurrent.CopyOnWriteArrayList<>();
+
+    @Override
+    public void onDeactivate() {
+        renderPos.clear();
+        delay.clear();
+    }
 
     @EventHandler
     private void onTick(TickEvent.Pre event) {
         for (int i = delay.size() - 1; i >= 0; i--) {
+            if (i >= delay.size()) continue;
             int time = delay.get(i);
             if (time <= 0) {
                 delay.remove(i);
-                renderPos.remove(i);
+                if (i < renderPos.size()) renderPos.remove(i);
             } else {
                 delay.set(i, time - 1);
             }
@@ -108,6 +115,7 @@ public class SoundLocator extends Module {
     
     @EventHandler
     private void onPlaySound(PlaySoundEvent event) {
+        if (event.sound == null) return;
         if(whitelist.get()) {
             // Whitelist ON
             for (SoundEvent sound : sounds.get()) {
@@ -123,7 +131,7 @@ public class SoundLocator extends Module {
     }
 
     private void printSound(SoundInstance sound) {
-        WeighedSoundEvents soundSet = mc.getSoundManager().getSoundEvent(sound.getIdentifier());
+        WeighedSoundEvents soundSet = mc.getSoundManager() != null ? mc.getSoundManager().getSoundEvent(sound.getIdentifier()) : null;
 
         Vec3 pos = new Vec3(sound.getX() - 0.5, sound.getY() - 0.5, sound.getZ() - 0.5);
         if(!renderPos.contains(pos)) {

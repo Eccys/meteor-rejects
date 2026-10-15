@@ -102,6 +102,7 @@ public class AutoPot extends Module {
 
     @EventHandler
     private void onTick(TickEvent.Pre event) {
+        if (mc.player == null || mc.level == null) return;
         if (mc.player.isUsingItem()) return;
         if (drinking || splashing) {
             stopPotionUsage();
@@ -116,9 +117,10 @@ public class AutoPot extends Module {
                         startPotionUse();
                         return;
                     } else if (registryEntry == MobEffects.INSTANT_HEALTH) {
-                        return;
+                        continue;
                     }
                     startPotionUse();
+                    return;
                 }
             }
         }
@@ -148,7 +150,10 @@ public class AutoPot extends Module {
     }
 
     private void stopPotionUsage() {
-        changeSlot(prevSlot);
+        if (!drinking && !splashing) return;
+        if (mc.player != null) {
+            changeSlot(prevSlot);
+        }
         setPressed(false);
         drinking = false;
         splashing = false;
@@ -162,9 +167,10 @@ public class AutoPot extends Module {
                 }
             }
         }
-        if (pauseBaritone.get() && wasBaritone) {
+        if (pauseBaritone.get() && wasBaritone && BaritoneUtils.IS_AVAILABLE) {
             BaritoneAPI.getProvider().getPrimaryBaritone().getCommandManager().execute("resume");
         }
+        wasBaritone = false;
     }
 
     private double trueHealth() {

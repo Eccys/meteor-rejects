@@ -13,10 +13,11 @@ import net.minecraft.network.protocol.game.ServerboundAcceptTeleportationPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.world.entity.PositionMoveRotation;
 import net.minecraft.world.phys.Vec3;
-import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class PacketFly extends Module {
-    private final HashSet<ServerboundMovePlayerPacket> packets = new HashSet<>();
+    private final Set<ServerboundMovePlayerPacket> packets = ConcurrentHashMap.newKeySet();
     private final SettingGroup sgMovement = settings.createGroup("movement");
     private final SettingGroup sgClient = settings.createGroup("client");
     private final SettingGroup sgBypass = settings.createGroup("bypass");
@@ -135,6 +136,7 @@ public class PacketFly extends Module {
 
     @EventHandler
     public void onSendMovementPackets(SendMovementPacketsEvent.Pre event) {
+        if (mc.player == null || mc.level == null) return;
         mc.player.setDeltaMovement(0.0,0.0,0.0);
         double speed = 0.0;
         boolean checkCollisionBoxes = checkHitBoxes();
@@ -149,6 +151,7 @@ public class PacketFly extends Module {
 
     @EventHandler
     public void onMove (PlayerMoveEvent event) {
+        if (mc.player == null) return;
         if (setMove.get() && flightCounter != 0) {
             event.movement = new Vec3(mc.player.getDeltaMovement().x, mc.player.getDeltaMovement().y, mc.player.getDeltaMovement().z);
         }
@@ -193,6 +196,7 @@ public class PacketFly extends Module {
     }
 
     private void sendPackets(double x, double y, double z, boolean teleport) {
+        if (mc.player == null || mc.player.connection == null) return;
         Vec3 vec = new Vec3(x, y, z);
         Vec3 playerPos = new Vec3(mc.player.getX(), mc.player.getY(), mc.player.getZ());
         Vec3 position = playerPos.add(vec);
@@ -208,7 +212,7 @@ public class PacketFly extends Module {
     }
 
     private void teleportPacket(Vec3 pos, boolean shouldTeleport) {
-        if (shouldTeleport) {
+        if (shouldTeleport && mc.player != null && mc.player.connection != null) {
             mc.player.connection.send(new ServerboundAcceptTeleportationPacket(++teleportID));
         }
     }
@@ -218,6 +222,7 @@ public class PacketFly extends Module {
     }
 
     private void packetSender(ServerboundMovePlayerPacket packet) {
+        if (mc.player == null || mc.player.connection == null) return;
         packets.add(packet);
         mc.player.connection.send(packet);
     }

@@ -78,12 +78,13 @@ public class Rendering extends Module {
 
     @Override
     public void onDeactivate() {
+        this.shader = null;
         if (mc.levelRenderer != null) mc.levelRenderer.allChanged();
     }
 
     public void onChanged(Shader s) {
-        if (mc.level == null) return;
-        String name = s.toString().toLowerCase();
+        if (mc.level == null || s == null || mc.getShaderManager() == null) return;
+        String name = s.name().toLowerCase(java.util.Locale.ROOT);
 
         if (name.equals("none")) {
             this.shader = null;
@@ -91,7 +92,11 @@ public class Rendering extends Module {
         }
 
         Identifier shaderID = Identifier.withDefaultNamespace(name);
-        this.shader = mc.getShaderManager().getPostChain(shaderID, LevelTargetBundle.MAIN_TARGETS);
+        try {
+            this.shader = mc.getShaderManager().getPostChain(shaderID, LevelTargetBundle.MAIN_TARGETS);
+        } catch (Exception e) {
+            this.shader = null;
+        }
     }
 
     public boolean renderStructureVoid() {

@@ -1,5 +1,6 @@
 package anticope.rejects;
 
+import anticope.rejects.arguments.ClientPosArgumentType;
 import anticope.rejects.arguments.EnumArgumentType;
 import anticope.rejects.arguments.EnumStringArgumentType;
 import anticope.rejects.utils.RejectsUtils;
@@ -13,6 +14,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.seedfinding.mccore.version.MCVersion;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.Test;
 
 import java.net.InetAddress;
@@ -122,6 +124,50 @@ class RejectsCoreTest {
         EnumStringArgumentType stringArg = new EnumStringArgumentType(List.of("foo", "bar"));
         assertEquals("foo", stringArg.parse(new StringReader("foo")));
         assertThrows(CommandSyntaxException.class, () -> stringArg.parse(new StringReader("baz")));
+    }
+
+    @Test
+    void testClientPosArgumentTypeAbsoluteRelativeAndIncomplete() throws CommandSyntaxException {
+        ClientPosArgumentType posArg = ClientPosArgumentType.pos();
+
+        Vec3 abs = posArg.parse(new StringReader("10 64 -20"));
+        assertEquals(10.0, abs.x, 1e-6);
+        assertEquals(64.0, abs.y, 1e-6);
+        assertEquals(-20.0, abs.z, 1e-6);
+
+        Vec3 rel = posArg.parse(new StringReader("~5 ~-2 ~"));
+        assertEquals(5.0, rel.x, 1e-6);
+        assertEquals(-2.0, rel.y, 1e-6);
+        assertEquals(0.0, rel.z, 1e-6);
+
+        Vec3 frac = posArg.parse(new StringReader("~-1.5 100 ~2.25"));
+        assertEquals(-1.5, frac.x, 1e-6);
+        assertEquals(100.0, frac.y, 1e-6);
+        assertEquals(2.25, frac.z, 1e-6);
+
+        StringReader incompleteOne = new StringReader("10");
+        assertThrows(CommandSyntaxException.class, () -> posArg.parse(incompleteOne));
+        assertEquals(0, incompleteOne.getCursor());
+
+        StringReader incompleteTwo = new StringReader("10 20");
+        assertThrows(CommandSyntaxException.class, () -> posArg.parse(incompleteTwo));
+        assertEquals(0, incompleteTwo.getCursor());
+
+        assertThrows(CommandSyntaxException.class, () -> posArg.parse(new StringReader("abc 20 30")));
+    }
+
+    @Test
+    void testPortScannerKillAllScansAndZeroRadiusSphere() {
+        List<BlockPos> singleBlockSphere = WorldUtils.getSphere(new BlockPos(5, 10, -5), 0, 0);
+        assertEquals(1, singleBlockSphere.size());
+        assertEquals(new BlockPos(5, 10, -5), singleBlockSphere.getFirst());
+
+        PortScannerManager.ScanResult open = new PortScannerManager.ScanResult(25565, true);
+        assertEquals(25565, open.getPort());
+        assertTrue(open.isOpen());
+
+        PortScannerManager.killAllScans();
+        assertTrue(PortScannerManager.scans.isEmpty());
     }
 
     @Test

@@ -47,7 +47,8 @@ public class FullFlight extends Module {
     }
 
     private double calculateGround() {
-        for (double ground = mc.player.getY(); ground > 0D; ground -= 0.05) {
+        double minY = mc.level != null ? mc.level.getMinY() : 0D;
+        for (double ground = mc.player.getY(); ground > minY; ground -= 0.05) {
             AABB box = mc.player.getBoundingBox();
             AABB adjustedBox = box.move(0, ground - mc.player.getY(), 0);
 
@@ -56,7 +57,7 @@ public class FullFlight extends Module {
             if (blockCollisions.findAny().isPresent()) return ground + 0.05;
         }
 
-        return 0F;
+        return minY;
     }
 
     // Copied from ServerPlayNetworkHandler#isEntityOnAir
@@ -114,6 +115,7 @@ public class FullFlight extends Module {
 
     @EventHandler
     private void onSendPacket(PacketEvent.Send event) {
+        if (mc.player == null || mc.level == null || mc.getConnection() == null) return;
         if (mc.player.getVehicle() != null || !(event.packet instanceof ServerboundMovePlayerPacket packet) || antiKickMode.get() != AntiKickMode.PaperNew)
             return;
 
@@ -159,6 +161,7 @@ public class FullFlight extends Module {
 
     @EventHandler
     private void onPlayerMove(PlayerMoveEvent event) {
+        if (mc.player == null || mc.level == null || mc.getConnection() == null) return;
         if (floatingTicks >= 20) {
             switch (antiKickMode.get()) {
                 case New -> {

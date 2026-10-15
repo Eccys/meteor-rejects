@@ -91,6 +91,7 @@ public class TreeAura extends Module {
     }
 
     private void doPlant(BlockPos plantPos) {
+        if (mc.player == null || mc.player.connection == null) return;
         FindItemResult sapling = findSapling();
         if (!sapling.found()) {
             error("No saplings in hotbar");
@@ -99,12 +100,17 @@ public class TreeAura extends Module {
         }
         InvUtils.swap(sapling.slot(), false);
         if (rotation.get())
-            Rotations.rotate(Rotations.getYaw(plantPos), Rotations.getPitch(plantPos), () -> mc.player.connection.send(new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(plantPos), Direction.UP, plantPos, false), 0)));
+            Rotations.rotate(Rotations.getYaw(plantPos), Rotations.getPitch(plantPos), () -> {
+                if (mc.player != null && mc.player.connection != null) {
+                    mc.player.connection.send(new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(plantPos), Direction.UP, plantPos, false), 0));
+                }
+            });
         else
             mc.player.connection.send(new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(plantPos), Direction.UP, plantPos, false), 0));
     }
 
     private void doBonemeal(BlockPos sapling) {
+        if (mc.player == null || mc.player.connection == null) return;
         FindItemResult bonemeal = findBonemeal();
         if (!bonemeal.found()) {
             error("No bonemeal in hotbar");
@@ -113,7 +119,11 @@ public class TreeAura extends Module {
         }
         InvUtils.swap(bonemeal.slot(), false);
         if (rotation.get())
-            Rotations.rotate(Rotations.getYaw(sapling), Rotations.getPitch(sapling), () -> mc.player.connection.send(new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(sapling), Direction.UP, sapling, false), 0)));
+            Rotations.rotate(Rotations.getYaw(sapling), Rotations.getPitch(sapling), () -> {
+                if (mc.player != null && mc.player.connection != null) {
+                    mc.player.connection.send(new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(sapling), Direction.UP, sapling, false), 0));
+                }
+            });
         else
             mc.player.connection.send(new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(sapling), Direction.UP, sapling, false), 0));
     }

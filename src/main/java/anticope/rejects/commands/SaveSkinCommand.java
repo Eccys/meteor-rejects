@@ -61,8 +61,14 @@ public class SaveSkinCommand extends Command {
             String PROFILE_REQUEST_URL = "https://sessionserver.mojang.com/session/minecraft/profile/%s";
 
             JsonObject object = Http.get(String.format(PROFILE_REQUEST_URL, uuid)).sendJson(JsonObject.class);
+            if (object == null || !object.has("properties")) {
+                throw IO_EXCEPTION.create();
+            }
             //Get the properties array which has what we need
             JsonArray array = object.getAsJsonArray("properties");
+            if (array == null || array.isEmpty()) {
+                throw IO_EXCEPTION.create();
+            }
             JsonObject property = array.get(0).getAsJsonObject();
             //value is what we grab but it's encoded so we have to decode it
             String base64String = property.get("value").getAsString();
@@ -74,21 +80,20 @@ public class SaveSkinCommand extends Command {
             JsonObject skinObj = texturesObject.getAsJsonObject("SKIN");
             String skinURL = skinObj.get("url").getAsString();
 
-            InputStream in = new BufferedInputStream(new URL(skinURL).openStream());
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            byte[] buf = new byte[1024];
-            int n = 0;
-            while (-1 != (n = in.read(buf))) {
-                out.write(buf, 0, n);
+            try (InputStream in = new BufferedInputStream(new URL(skinURL).openStream());
+                 ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+                byte[] buf = new byte[1024];
+                int n;
+                while (-1 != (n = in.read(buf))) {
+                    out.write(buf, 0, n);
+                }
+                byte[] response = out.toByteArray();
+                File file = new File(path);
+                try (FileOutputStream fos = new FileOutputStream(file.getPath())) {
+                    fos.write(response);
+                }
             }
-            out.close();
-            in.close();
-            byte[] response = out.toByteArray();
-            File file = new File(path);
-            FileOutputStream fos = new FileOutputStream(file.getPath());
-            fos.write(response);
-            fos.close();
-        } catch (IOException | NullPointerException e) {
+        } catch (IOException | RuntimeException e) {
             throw IO_EXCEPTION.create();
         }
     }

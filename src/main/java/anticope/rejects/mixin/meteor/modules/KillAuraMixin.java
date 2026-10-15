@@ -116,7 +116,7 @@ public class KillAuraMixin extends Module {
 
     @Inject(method = "onTick", at = @At("TAIL"), locals = LocalCapture.CAPTURE_FAILSOFT)
     private void onTick(TickEvent.Pre event, CallbackInfo ci, Entity primary) {
-        if (randomTeleport.get() && !onlyOnLook.get()) {
+        if (primary != null && mc.player != null && randomTeleport.get() && !onlyOnLook.get()) {
             mc.player.setPos(primary.getX() + randomOffset(), primary.getY(), primary.getZ() + randomOffset());
         }
     }
@@ -129,8 +129,9 @@ public class KillAuraMixin extends Module {
 
     @Inject(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;attack(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/entity/Entity;)V"), cancellable = true)
     private void onHit(Entity target, CallbackInfo info) {
+        if (Modules.get() == null) return;
         ShieldBypass shieldBypass = Modules.get().get(ShieldBypass.class);
-        if (shieldBypass.isActive()) {
+        if (shieldBypass != null && shieldBypass.isActive()) {
             Cancellable dummyEvent = new Cancellable();
             shieldBypass.bypass(target, dummyEvent);
             if (dummyEvent.isCancelled()) {

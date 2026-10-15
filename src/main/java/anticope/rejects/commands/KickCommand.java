@@ -40,15 +40,21 @@ public class KickCommand extends Command {
     @Override
     public void build(LiteralArgumentBuilder<ClientSuggestionProvider> builder) {
         builder.then(literal("disconnect").executes(ctx -> {
-            mc.player.connection.handleDisconnect(new ClientboundDisconnectPacket(Component.literal("Disconnected via .kick command")));
+            if (mc.player != null && mc.player.connection != null) {
+                mc.player.connection.handleDisconnect(new ClientboundDisconnectPacket(Component.literal("Disconnected via .kick command")));
+            }
             return SINGLE_SUCCESS;
         }));
         builder.then(literal("pos").executes(ctx -> {
-            mc.player.connection.send(new ServerboundMovePlayerPacket.Pos(Double.NaN, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, !mc.player.onGround(), mc.player.horizontalCollision));
+            if (mc.player != null && mc.player.connection != null) {
+                mc.player.connection.send(new ServerboundMovePlayerPacket.Pos(Double.NaN, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, !mc.player.onGround(), mc.player.horizontalCollision));
+            }
             return SINGLE_SUCCESS;
         }));
         builder.then(literal("hurt").executes(ctx -> {
-            mc.player.connection.send(new ServerboundAttackPacket(mc.player.getId()));
+            if (mc.player != null && mc.player.connection != null) {
+                mc.player.connection.send(new ServerboundAttackPacket(mc.player.getId()));
+            }
             return SINGLE_SUCCESS;
         }));
         builder.then(literal("chat").executes(ctx -> {
