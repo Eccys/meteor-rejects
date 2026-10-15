@@ -31,30 +31,27 @@ public class AntiCrash extends Module {
     private void onPacketReceive(PacketEvent.Receive event) {
         if (event.packet instanceof ClientboundExplodePacket packet) {
             Vec3 explodePos = packet.center();
-            Vec3 playerKnockback = new Vec3(0, 0, 0);
-            if(packet.playerKnockback().isPresent()) {
-                playerKnockback = packet.playerKnockback().get();
+            Vec3 playerKnockback = packet.playerKnockback().orElse(Vec3.ZERO);
+            if (isOutOfBounds(explodePos, 30_000_000) || isOutOfBounds(playerKnockback, 30_000_000)) {
+                cancel(event);
             }
-            if (/* outside of world */ explodePos.x() > 30_000_000 || explodePos.y() > 30_000_000 || explodePos.z() > 30_000_000 || explodePos.x() < -30_000_000 || explodePos.y() < -30_000_000 || explodePos.z() < -30_000_000 ||
-                    // too much knockback
-                    playerKnockback.x > 30_000_000 || playerKnockback.y > 30_000_000 || playerKnockback.z > 30_000_000
-                    // knockback can be negative?
-                    || playerKnockback.x < -30_000_000 || playerKnockback.y < -30_000_000 || playerKnockback.z < -30_000_000
-            ) cancel(event);
         } else if (event.packet instanceof ClientboundLevelParticlesPacket packet) {
             // too many particles
             if (packet.getCount() > 100_000) cancel(event);
         } else if (event.packet instanceof ClientboundPlayerPositionPacket packet) {
             Vec3 playerPos = packet.change().position();
             // out of world movement
-            if (playerPos.x > 30_000_000 || playerPos.y > 30_000_000 || playerPos.z > 30_000_000 || playerPos.x < -30_000_000 || playerPos.y < -30_000_000 || playerPos.z < -30_000_000)
-                cancel(event);
+            if (isOutOfBounds(playerPos, 30_000_000)) cancel(event);
         } else if (event.packet instanceof ClientboundSetEntityMotionPacket packet) {
             // velocity
-            if (packet.movement().x > 1000 || packet.movement().y > 1000 || packet.movement().z > 1000
-                    || packet.movement().x < -1000 || packet.movement().y  < -1000 || packet.movement().z < -1000
-            ) cancel(event);
+            if (isOutOfBounds(packet.movement(), 1000)) cancel(event);
         }
+    }
+
+    private static boolean isOutOfBounds(Vec3 vec, double limit) {
+        return vec == null
+                || !Double.isFinite(vec.x) || !Double.isFinite(vec.y) || !Double.isFinite(vec.z)
+                || Math.abs(vec.x) > limit || Math.abs(vec.y) > limit || Math.abs(vec.z) > limit;
     }
 
     private void cancel(PacketEvent.Receive event) {

@@ -74,12 +74,14 @@ public class AutoLogin extends Module {
     @EventHandler
     private void onGameJoined(GameJoinedEvent event) {
         if (!isActive()) return;
-        String command = commands.get().getOrDefault("*", commands.get().get(Utils.getWorldName()));
+        String command = commands.get().getOrDefault(Utils.getWorldName(), commands.get().get("*"));
         if (command != null) {
             timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
-                    if (mc.player != null) ChatUtils.sendPlayerMsg(command);
+                    mc.execute(() -> {
+                        if (mc.player != null) ChatUtils.sendPlayerMsg(command);
+                    });
                 }
             }, delay.get());
         }

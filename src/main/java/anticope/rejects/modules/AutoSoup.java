@@ -52,6 +52,7 @@ public class AutoSoup extends Module {
 
     @EventHandler
     private void onTick(TickEvent.Post event) {
+        if (mc.player == null || mc.level == null || mc.gameMode == null) return;
         // sort empty bowls
         for (int i = 0; i < 36; i++) {
             // filter out non-bowl items and empty bowl slot
@@ -65,12 +66,12 @@ public class AutoSoup extends Module {
                     && emptyBowlStack.getItem() != Items.BOWL;
 
             // place bowl in empty bowl slot
-            InvUtils.click().slot(i < 9 ? 36 + i : i);
+            InvUtils.click().slot(i);
             InvUtils.click().slot(9);
 
             // place non-bowl item from empty bowl slot in current slot
             if (swap)
-                InvUtils.click().slot(i < 9 ? 36 + i : i);
+                InvUtils.click().slot(i);
         }
 
         // search soup in hotbar
@@ -136,12 +137,12 @@ public class AutoSoup extends Module {
                 return false;
             }
             case EntityHitResult entityHitResult -> {
-                Entity entity = ((EntityHitResult) mc.hitResult).getEntity();
+                Entity entity = entityHitResult.getEntity();
                 return entity instanceof Villager
                         || entity instanceof TamableAnimal;
             }
             case BlockHitResult blockHitResult -> {
-                BlockPos pos = ((BlockHitResult) mc.hitResult).getBlockPos();
+                BlockPos pos = blockHitResult.getBlockPos();
                 if (pos == null)
                     return false;
 
@@ -165,7 +166,9 @@ public class AutoSoup extends Module {
         mc.options.keyUse.setDown(false);
 
         // reset slot
-        mc.player.getInventory().setSelectedSlot(oldSlot);
+        if (mc.player != null) {
+            mc.player.getInventory().setSelectedSlot(oldSlot);
+        }
         oldSlot = -1;
     }
 

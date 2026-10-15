@@ -65,8 +65,9 @@ public class AntiBot extends Module {
 
     @EventHandler
     public void onTick(TickEvent.Post tickEvent) {
+        if (mc.level == null || mc.player == null || mc.getConnection() == null) return;
         for (Entity entity : mc.level.entitiesForRendering()) {
-            if (!(entity instanceof Player playerEntity)) continue;
+            if (entity == mc.player || !(entity instanceof Player playerEntity)) continue;
             if (removeInvisible.get() && !entity.isInvisible()) continue;
 
             if (isBot(playerEntity)) entity.remove(Entity.RemovalReason.DISCARDED);
@@ -76,12 +77,10 @@ public class AntiBot extends Module {
     private boolean isBot(Player entity) {
         try {
             if (gameMode.get() && EntityUtils.getGameMode(entity) == null) return true;
-            if (api.get() &&
-                    mc.getConnection().getPlayerInfo(entity.getUUID()) == null) return true;
-            if (profile.get() &&
-                    mc.getConnection().getPlayerInfo(entity.getUUID()).getProfile() == null) return true;
-            if (latency.get() &&
-                    mc.getConnection().getPlayerInfo(entity.getUUID()).getLatency() > 1) return true;
+            var playerInfo = mc.getConnection().getPlayerInfo(entity.getUUID());
+            if (api.get() && playerInfo == null) return true;
+            if (profile.get() && (playerInfo == null || playerInfo.getProfile() == null)) return true;
+            if (latency.get() && playerInfo != null && playerInfo.getLatency() > 1) return true;
         } catch (NullPointerException e) {
             if (nullException.get()) return true;
         }

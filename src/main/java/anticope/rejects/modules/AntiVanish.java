@@ -61,6 +61,8 @@ public class AntiVanish extends Module {
         timer = 0;
         completionIDs.clear();
         messageCache.clear();
+        playerCache.clear();
+        completionPlayerCache = new ArrayList<>();
     }
 
     @Override
@@ -73,6 +75,7 @@ public class AntiVanish extends Module {
 
     @EventHandler
     private void onPacket(PacketEvent.Receive event) {
+        if (mc.player == null) return;
         if (mode.get() == Mode.RealJoinMessage && event.packet instanceof ClientboundCommandSuggestionsPacket packet) {
             if (completionIDs.contains(packet.id())) {
                 var lastUsernames = completionPlayerCache.stream().toList();
@@ -81,12 +84,17 @@ public class AntiVanish extends Module {
                         .map(Suggestion::getText)
                         .toList();
 
-                if (lastUsernames.isEmpty()) return;
+                if (lastUsernames.isEmpty()) {
+                    completionIDs.remove(Integer.valueOf(packet.id()));
+                    event.cancel();
+                    return;
+                }
 
+                String selfName = mc.player.getName().getString();
                 Predicate<String> joinedOrQuit = playerName -> lastUsernames.contains(playerName) != completionPlayerCache.contains(playerName);
 
                 for (String playerName : completionPlayerCache) {
-                    if (Objects.equals(playerName, mc.player.getName().getString())) continue;
+                    if (Objects.equals(playerName, selfName)) continue;
                     if (playerName.contains(" ")) continue;
                     if (playerName.length() < 3 || playerName.length() > 16) continue;
                     if (joinedOrQuit.test(playerName)) {
@@ -95,7 +103,7 @@ public class AntiVanish extends Module {
                 }
 
                 for (String playerName : lastUsernames) {
-                    if (Objects.equals(playerName, mc.player.getName().getString())) continue;
+                    if (Objects.equals(playerName, selfName)) continue;
                     if (playerName.contains(" ")) continue;
                     if (playerName.length() < 3 || playerName.length() > 16) continue;
                     if (joinedOrQuit.test(playerName)) {
@@ -116,18 +124,25 @@ public class AntiVanish extends Module {
 
     @EventHandler
     private void onTick(TickEvent.Post event) {
+        if (mc.player == null || mc.getConnection() == null) return;
         timer++;
         if (timer < interval.get()) return;
 
         switch (mode.get()) {
             case LeaveMessage -> {
                 Map<UUID, String> oldPlayers = Map.copyOf(playerCache);
-                playerCache = mc.getConnection().getOnlinePlayers().stream().collect(Collectors.toMap(e -> e.getProfile().id(), e -> e.getProfile().name()));
+                playerCache = mc.getConnection().getOnlinePlayers().stream()
+                        .filter(e -> e.getProfile() != null && e.getProfile().id() != null && e.getProfile().name() != null)
+                        .collect(Collectors.toMap(
+                                e -> e.getProfile().id(),
+                                e -> e.getProfile().name(),
+                                (a, b) -> b
+                        ));
 
                 for (UUID uuid : oldPlayers.keySet()) {
                     if (playerCache.containsKey(uuid)) continue;
                     String name = oldPlayers.get(uuid);
-                    if (name.contains(" ")) continue;
+                    if (name == null || name.contains(" ")) continue;
                     if (name.length() < 3 || name.length() > 16) continue;
                     if (messageCache.stream().noneMatch(s -> s.contains(name))) {
                         warning(name + " has gone into vanish.");

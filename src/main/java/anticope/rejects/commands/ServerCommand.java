@@ -57,7 +57,7 @@ public class ServerCommand extends Command {
             scanKnownPorts(getAddress());
             return SINGLE_SUCCESS;
         })));
-        builder.then(literal("ports").then(argument("from", IntegerArgumentType.integer(0)).then(argument("to", IntegerArgumentType.integer(1)).executes(ctx -> {
+        builder.then(literal("ports").then(argument("from", IntegerArgumentType.integer(1, 65535)).then(argument("to", IntegerArgumentType.integer(1, 65535)).executes(ctx -> {
             scanRange(getAddress(), IntegerArgumentType.getInteger(ctx, "from"),
                     IntegerArgumentType.getInteger(ctx, "to"));
             return SINGLE_SUCCESS;

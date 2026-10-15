@@ -65,6 +65,7 @@ public class LawnBot extends Module {
 
     @EventHandler
     private void onTick(TickEvent.Post event) {
+        if (mc.player == null || mc.level == null || mc.gameMode == null) return;
         // Apply delay
         if (delay.get() > 0) {
             if (tickCounter < delay.get()) {
@@ -100,8 +101,9 @@ public class LawnBot extends Module {
                 mc.player.getInventory().setSelectedSlot(grassHotbarSlot);
                 mc.gameMode.useItemOn(mc.player, InteractionHand.MAIN_HAND, new BlockHitResult(new Vec3(pos.getX(), pos.getY(), pos.getZ()), Direction.UP, pos, false));
                 return;
-            } else if (!blockWhitelist.get().contains(block)) {
+            } else if (block != Blocks.AIR && !blockWhitelist.get().contains(block)) {
                 myceliumSpots.remove(i);
+                i--;
             }
         }
         for (int i = 0; i < myceliumSpots.size(); i++) {

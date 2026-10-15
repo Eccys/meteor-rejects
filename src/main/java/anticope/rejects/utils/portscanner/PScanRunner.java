@@ -10,8 +10,9 @@ import java.util.concurrent.*;
 import java.util.function.Consumer;
 
 public class PScanRunner {
-    public boolean running = true;
-    public int portsScanned = 0;
+    public volatile boolean running = true;
+    public volatile int portsScanned = 0;
+    private final Object scanLock = new Object();
     ExecutorService es;
     List<Future<PortScannerManager.ScanResult>> futures = new ArrayList<>();
     Thread runner;
@@ -19,7 +20,7 @@ public class PScanRunner {
     public PScanRunner(InetAddress address, int threads, int threadDelay, int timeoutMS, Collection<Integer> ports,
                        Consumer<List<PortScannerManager.ScanResult>> callback) {
         runner = new Thread(() -> {
-            es = Executors.newFixedThreadPool(threads);
+            es = Executors.newFixedThreadPool(Math.max(1, threads));
             ports.forEach(port -> {
                 futures.add(isPortOpen(es, address.getHostAddress(), port, timeoutMS, threadDelay));
             });
@@ -27,12 +28,16 @@ public class PScanRunner {
             try {
                 es.awaitTermination(200L, TimeUnit.MILLISECONDS);
             } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
             }
             List<PortScannerManager.ScanResult> results = new ArrayList<>();
             for (Future<PortScannerManager.ScanResult> fsc : futures) {
                 try {
                     results.add(fsc.get());
-                } catch (InterruptedException | ExecutionException e) {
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                } catch (ExecutionException | CancellationException e) {
                     e.printStackTrace();
                 }
             }
@@ -52,14 +57,13 @@ public class PScanRunner {
             if (!running)
                 return new PortScannerManager.ScanResult(port, false);
             Thread.sleep(delay);
-            portsScanned++;
-            try {
-                Socket socket = new Socket();
+            synchronized (scanLock) {
+                portsScanned++;
+            }
+            try (Socket socket = new Socket()) {
                 socket.connect(new InetSocketAddress(ip, port), timeout);
-                socket.close();
                 return new PortScannerManager.ScanResult(port, true);
             } catch (Exception exc) {
-
                 return new PortScannerManager.ScanResult(port, false);
             }
         });

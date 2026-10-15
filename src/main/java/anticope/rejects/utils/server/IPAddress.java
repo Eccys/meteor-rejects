@@ -15,22 +15,29 @@ public class IPAddress {
     }
 
     public static IPAddress fromText(String ip) {
-        String[] sections = ip.split(":");
+        if (ip == null || ip.isBlank())
+            return null;
+
+        String[] sections = ip.split(":", -1);
         if (sections.length < 1 || sections.length > 2)
             return null;
 
         int port = 25565;
         if (sections.length == 2) {
+            if (sections[1].trim().isEmpty())
+                return null;
             try {
                 port = Integer.parseInt(sections[1].trim());
             } catch (NumberFormatException e) {
                 return null;
             }
+            if (port < 1 || port > 65535)
+                return null;
         }
 
         int[] octets = new int[4];
 
-        String[] address = sections[0].trim().split("\\.");
+        String[] address = sections[0].trim().split("\\.", -1);
         if (address.length != 4)
             return null;
 
@@ -40,6 +47,8 @@ public class IPAddress {
             } catch (NumberFormatException e) {
                 return null;
             }
+            if (octets[i] < 0 || octets[i] > 255)
+                return null;
         }
 
         return new IPAddress(octets, port);

@@ -20,7 +20,7 @@ public class SetBlockCommand extends Command {
         builder.then(argument("pos", ClientPosArgumentType.pos()).then(argument("block", BlockStateArgument.block(REGISTRY_ACCESS)).executes(ctx -> {
             Vec3 pos = ClientPosArgumentType.getPos(ctx, "pos");
             BlockState blockState = ctx.getArgument("block", BlockInput.class).getState();
-            mc.level.setBlockAndUpdate(new BlockPos((int) pos.x(), (int) pos.y(), (int) pos.z()), blockState);
+            mc.level.setBlockAndUpdate(BlockPos.containing(pos), blockState);
 
             return SINGLE_SUCCESS;
         })));

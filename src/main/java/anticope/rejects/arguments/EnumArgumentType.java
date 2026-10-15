@@ -17,17 +17,12 @@ public class EnumArgumentType<T extends Enum<?>> implements ArgumentType<T> {
     private static final DynamicCommandExceptionType NO_SUCH_TYPE = new DynamicCommandExceptionType(o ->
             Component.literal(o + " is not a valid argument."));
 
-    private T[] values;
+    private final T[] values;
 
+    @SuppressWarnings("unchecked")
     public EnumArgumentType(T defaultValue) {
         super();
-
-        try {
-            //noinspection unchecked
-            values = (T[]) defaultValue.getClass().getMethod("values").invoke(null);
-        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            e.printStackTrace();
-        }
+        values = (T[]) defaultValue.getDeclaringClass().getEnumConstants();
     }
 
     public static <T extends Enum<?>> EnumArgumentType<T> enumArgument(T defaultValue) {
@@ -36,7 +31,7 @@ public class EnumArgumentType<T extends Enum<?>> implements ArgumentType<T> {
 
     @SuppressWarnings("unchecked")
     public static <T extends Enum<?>> T getEnum(CommandContext<?> context, String name, T defaultValue) {
-        return (T) context.getArgument(name, defaultValue.getClass());
+        return (T) context.getArgument(name, defaultValue.getDeclaringClass());
     }
 
     @Override
