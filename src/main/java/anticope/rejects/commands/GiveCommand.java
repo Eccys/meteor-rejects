@@ -57,6 +57,7 @@ public class GiveCommand extends Command {
                 ct.putString("id", "minecraft:item");
                 CompoundTag itemTag = new CompoundTag();
                 itemTag.putString("id", BuiltInRegistries.ITEM.getKey(inHand.getItem()).toString());
+                itemTag.putInt("count", inHand.getCount());
                 itemTag.putInt("Count", inHand.getCount());
 
                 ct.put("Item", itemTag);
@@ -118,20 +119,30 @@ public class GiveCommand extends Command {
 
         // TODO : resolve textures, should be easy now that UUID is resolved
         builder.then(literal("head").then(argument("owner", StringArgumentType.greedyString()).executes(ctx -> {
+            if (mc.player == null || !mc.player.getAbilities().instabuild) {
+                throw GiveUtils.NOT_IN_CREATIVE.create();
+            }
             String playerName = ctx.getArgument("owner", String.class).trim();
             if (!isValidProfileName(playerName)) {
                 error("Invalid player name (must be 1-16 characters without spaces or control characters).");
                 return SINGLE_SUCCESS;
             }
-            ItemStack itemStack = new ItemStack(Items.PLAYER_HEAD);
-
-            var changes = DataComponentPatch.builder()
-                    .set(DataComponents.PROFILE, net.minecraft.world.item.component.ResolvableProfile.createResolved(new GameProfile(getUUID(playerName), playerName)))
-                    .build();
-
-            itemStack.applyComponentsAndValidate(changes);
-
-            GiveUtils.giveItem(itemStack);
+            meteordevelopment.meteorclient.utils.network.MeteorExecutor.execute(() -> {
+                java.util.UUID uuid = getUUID(playerName);
+                mc.execute(() -> {
+                    if (mc.player == null) return;
+                    try {
+                        ItemStack itemStack = new ItemStack(Items.PLAYER_HEAD);
+                        var changes = DataComponentPatch.builder()
+                                .set(DataComponents.PROFILE, net.minecraft.world.item.component.ResolvableProfile.createResolved(new GameProfile(uuid, playerName)))
+                                .build();
+                        itemStack.applyComponentsAndValidate(changes);
+                        GiveUtils.giveItem(itemStack);
+                    } catch (com.mojang.brigadier.exceptions.CommandSyntaxException e) {
+                        error(e.getMessage());
+                    }
+                });
+            });
             return SINGLE_SUCCESS;
         })));
 

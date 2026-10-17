@@ -50,11 +50,12 @@ public class TerrainExport extends Command {
                 }
             }
 
+            filters.rewind();
             String path = TinyFileDialogs.tinyfd_saveFileDialog("Save data", null, filters, null);
-            if (path == null) throw IO_EXCEPTION.create();
+            if (path == null || path.isBlank()) return SINGLE_SUCCESS;
             if (!path.toLowerCase(java.util.Locale.ROOT).endsWith(".txt"))
                 path += ".txt";
-            try (FileWriter file = new FileWriter(path)) {
+            try (FileWriter file = new FileWriter(path, java.nio.charset.StandardCharsets.UTF_8)) {
                 file.write(stringBuilder.toString().trim());
             } catch (IOException e) {
                 throw IO_EXCEPTION.create();

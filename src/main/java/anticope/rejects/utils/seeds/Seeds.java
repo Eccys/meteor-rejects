@@ -43,14 +43,17 @@ public class Seeds extends System<Seeds> {
             return new Seed(mc.getSingleplayerServer().overworld().getSeed(), version);
         }
 
-        return seeds.get(Utils.getWorldName());
+        String worldName = Utils.getWorldName();
+        return (worldName == null || worldName.isEmpty()) ? null : seeds.get(worldName);
     }
 
     public void setSeed(String seed, MCVersion version) {
         if (mc.hasSingleplayerServer() || seed == null) return;
+        String worldName = Utils.getWorldName();
+        if (worldName == null || worldName.isEmpty()) return;
 
         long numSeed = toSeed(seed);
-        seeds.put(Utils.getWorldName(), new Seed(numSeed, version));
+        seeds.put(worldName, new Seed(numSeed, version));
         MeteorClient.EVENT_BUS.post(SeedChangedEvent.get(numSeed));
     }
 

@@ -99,6 +99,10 @@ public class ChestAura extends Module {
     @Override
     public void onDeactivate() {
         MeteorClient.EVENT_BUS.unsubscribe(closeListener);
+        InventoryTweaks invTweaks = Modules.get() != null ? Modules.get().get(InventoryTweaks.class) : null;
+        if (invTweaks != null) {
+            ((IInventoryTweaks) invTweaks).stealCallback(null);
+        }
         openedBlocks.clear();
         timer = 0;
     }
@@ -166,7 +170,9 @@ public class ChestAura extends Module {
             switch (closeCondition.get()) {
                 case IfEmpty -> {
                     NonNullList<ItemStack> stacks = NonNullList.create();
-                    int maxSlot = Math.max(0, Math.min(handler.slots.size(), SlotUtils.indexToId(SlotUtils.MAIN_START)));
+                    int maxSlot = handler.slots.size() > 36
+                            ? handler.slots.size() - 36
+                            : Math.max(0, Math.min(handler.slots.size(), SlotUtils.indexToId(SlotUtils.MAIN_START)));
                     IntStream.range(0, maxSlot).mapToObj(handler.slots::get).map(Slot::getItem).forEach(stacks::add);
                     if (stacks.stream().allMatch(ItemStack::isEmpty)) mc.player.closeContainer();
                 }
@@ -174,9 +180,9 @@ public class ChestAura extends Module {
                 case AfterSteal -> {
                     InventoryTweaks invTweaks = Modules.get() != null ? Modules.get().get(InventoryTweaks.class) : null;
                     if (invTweaks != null) {
-                        ((IInventoryTweaks) invTweaks).stealCallback(() -> {
+                        ((IInventoryTweaks) invTweaks).stealCallback(() -> mc.execute(() -> {
                             if (mc.player != null) mc.player.closeContainer();
-                        });
+                        }));
                     }
                 }
             }

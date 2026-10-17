@@ -59,7 +59,8 @@ public class LocateCommand extends Command {
 									cubiomesVersion = Cubiomes.MCVersion.MC_1_19_2;
 									break;
 								default:
-									throw new IllegalStateException("Unexpected value: " + version);
+									cubiomesVersion = Cubiomes.MCVersion.MC_1_19_2;
+									break;
 							}
 						} else if (version.isNewerOrEqualTo(MCVersion.v1_18)) {
 							cubiomesVersion = Cubiomes.MCVersion.MC_1_18;

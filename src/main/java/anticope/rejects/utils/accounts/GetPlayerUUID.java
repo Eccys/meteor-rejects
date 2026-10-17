@@ -48,6 +48,9 @@ public class GetPlayerUUID {
             conn = (HttpURLConnection) url.openConnection();
             conn.setConnectTimeout(5000);
             conn.setReadTimeout(5000);
+            if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                return "";
+            }
             try (BufferedReader br = new BufferedReader(
                     new InputStreamReader(conn.getInputStream(), java.nio.charset.StandardCharsets.UTF_8))) {
                 return br.lines().collect(Collectors.joining());

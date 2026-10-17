@@ -40,9 +40,19 @@ public class FillCommand extends Command {
         }))))));
     }
 
+    private static final long MAX_FILL_BLOCKS = 32768L;
+
+    public static long calculateFillVolume(int minX, int maxX, int minY, int maxY, int minZ, int maxZ) {
+        return anticope.rejects.utils.RejectsUtils.calculateFillVolume(minX, maxX, minY, maxY, minZ, maxZ);
+    }
+
     private void fillArea(Vec3 fromPos, Vec3 toPos, BlockState blockState, BlockState filterBlock) {
         if (mc.level == null) return;
         MinMaxCoords coords = getMinMaxCoords(fromPos, toPos);
+        if (calculateFillVolume(coords.minX, coords.maxX, coords.minY, coords.maxY, coords.minZ, coords.maxZ) > MAX_FILL_BLOCKS) {
+            error("Too many blocks in the specified area (maximum " + MAX_FILL_BLOCKS + ").");
+            return;
+        }
 
         for (int x = coords.minX; x <= coords.maxX; x++) {
             for (int y = coords.minY; y <= coords.maxY; y++) {

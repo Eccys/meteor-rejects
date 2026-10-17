@@ -15,7 +15,9 @@ public class PanicCommand extends Command {
     @Override
     public void build(LiteralArgumentBuilder<ClientSuggestionProvider> builder) {
         builder.executes(context -> {
-            new ArrayList<>(Modules.get().getActive()).forEach(Module::toggle);
+            if (Modules.get() != null) {
+                new ArrayList<>(Modules.get().getActive()).forEach(Module::toggle);
+            }
 
             return SINGLE_SUCCESS;
         });
