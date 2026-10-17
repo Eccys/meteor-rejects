@@ -38,6 +38,7 @@ public class GiveCommand extends Command {
         builder.then(literal("egg").executes(ctx -> {
             if (mc.player == null) return SINGLE_SUCCESS;
             ItemStack inHand = mc.player.getMainHandItem();
+            if (inHand.isEmpty()) return SINGLE_SUCCESS;
             ItemStack item = new ItemStack(Items.STRIDER_SPAWN_EGG);
             CompoundTag ct = new CompoundTag();
 
@@ -117,7 +118,11 @@ public class GiveCommand extends Command {
 
         // TODO : resolve textures, should be easy now that UUID is resolved
         builder.then(literal("head").then(argument("owner", StringArgumentType.greedyString()).executes(ctx -> {
-            String playerName = ctx.getArgument("owner", String.class);
+            String playerName = ctx.getArgument("owner", String.class).trim();
+            if (!isValidProfileName(playerName)) {
+                error("Invalid player name (must be 1-16 characters without spaces or control characters).");
+                return SINGLE_SUCCESS;
+            }
             ItemStack itemStack = new ItemStack(Items.PLAYER_HEAD);
 
             var changes = DataComponentPatch.builder()
@@ -135,6 +140,10 @@ public class GiveCommand extends Command {
             GiveUtils.giveItem(GiveUtils.getPreset(name));
             return SINGLE_SUCCESS;
         })));
+    }
+
+    public static boolean isValidProfileName(String name) {
+        return anticope.rejects.utils.RejectsUtils.isValidProfileName(name);
     }
 
     private int createHolo(String message, double x, double y, double z) throws com.mojang.brigadier.exceptions.CommandSyntaxException {

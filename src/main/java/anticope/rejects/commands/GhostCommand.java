@@ -20,7 +20,7 @@ public class GhostCommand extends Command {
             execute(4);
             return SINGLE_SUCCESS;
         });
-        builder.then(argument("radius", IntegerArgumentType.integer(1)).executes(ctx -> {
+        builder.then(argument("radius", IntegerArgumentType.integer(1, 32)).executes(ctx -> {
             int radius = IntegerArgumentType.getInteger(ctx, "radius");
             execute(radius);
             return SINGLE_SUCCESS;
@@ -28,6 +28,7 @@ public class GhostCommand extends Command {
     }
 
     private void execute(int radius) {
+        radius = Math.max(1, Math.min(32, radius));
         ClientPacketListener conn = mc.getConnection();
         if (conn == null || mc.player == null)
             return;

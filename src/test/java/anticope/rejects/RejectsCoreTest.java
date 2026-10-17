@@ -266,4 +266,86 @@ class RejectsCoreTest {
         assertTrue(PortScannerManager.scans.isEmpty());
         assertFalse(cancelledCallbackLatch.await(150, TimeUnit.MILLISECONDS), "Cancelled scan should not invoke completion callback");
     }
+
+    @Test
+    void testGetPlayerUUIDParsingValidAndInvalidJson() {
+        java.util.UUID expected = java.util.UUID.fromString("069a79f4-44e9-4726-a5be-fca90e38aaf5");
+        assertEquals(
+                expected,
+                anticope.rejects.utils.accounts.GetPlayerUUID.parseUuidFromMojangJson(
+                        "{\"id\":\"069a79f444e94726a5befca90e38aaf5\",\"name\":\"Notch\"}"
+                )
+        );
+        assertEquals(
+                expected,
+                anticope.rejects.utils.accounts.GetPlayerUUID.parseUuidFromMojangJson(
+                        "{\"id\":\"069a79f4-44e9-4726-a5be-fca90e38aaf5\",\"name\":\"Notch\"}"
+                )
+        );
+
+        assertNull(anticope.rejects.utils.accounts.GetPlayerUUID.parseUuidFromMojangJson(null));
+        assertNull(anticope.rejects.utils.accounts.GetPlayerUUID.parseUuidFromMojangJson(""));
+        assertNull(anticope.rejects.utils.accounts.GetPlayerUUID.parseUuidFromMojangJson("   "));
+        assertNull(anticope.rejects.utils.accounts.GetPlayerUUID.parseUuidFromMojangJson("{}"));
+        assertNull(anticope.rejects.utils.accounts.GetPlayerUUID.parseUuidFromMojangJson("{\"id\":null}"));
+        assertNull(anticope.rejects.utils.accounts.GetPlayerUUID.parseUuidFromMojangJson("{\"id\":\"not-a-valid-uuid\"}"));
+        assertNull(anticope.rejects.utils.accounts.GetPlayerUUID.parseUuidFromMojangJson("not json at all"));
+
+        assertNotNull(anticope.rejects.utils.accounts.GetPlayerUUID.getUUID(null));
+        assertNotNull(anticope.rejects.utils.accounts.GetPlayerUUID.getUUID("   "));
+    }
+
+    @Test
+    void testGiveCommandProfileNameValidation() {
+        assertTrue(RejectsUtils.isValidProfileName("Notch"));
+        assertTrue(RejectsUtils.isValidProfileName("A"));
+        assertTrue(RejectsUtils.isValidProfileName("Player_123456789"));
+
+        assertFalse(RejectsUtils.isValidProfileName(null));
+        assertFalse(RejectsUtils.isValidProfileName(""));
+        assertFalse(RejectsUtils.isValidProfileName("Player_1234567890"));
+        assertFalse(RejectsUtils.isValidProfileName("Name With Space"));
+        assertFalse(RejectsUtils.isValidProfileName("Name\tTab"));
+        assertFalse(RejectsUtils.isValidProfileName("NonAscii\u00e9"));
+    }
+
+    @Test
+    void testServerCommandHostPortAndUriFormatting() {
+        assertEquals("192.168.1.10:25565", RejectsUtils.formatHostPort("192.168.1.10", 25565));
+        assertEquals("[2001:db8::1]:8123", RejectsUtils.formatHostPort("2001:db8::1", 8123));
+        assertEquals("[fe80::1]:25565", RejectsUtils.formatHostPort("fe80::1%eth0", 25565));
+        assertEquals("127.0.0.1:80", RejectsUtils.formatHostPort(null, 80));
+
+        assertEquals(
+                java.net.URI.create("http://[2001:db8::1]:80"),
+                RejectsUtils.buildServiceUri("HTTP", "2001:db8::1", 80)
+        );
+        assertEquals(
+                java.net.URI.create("https://10.0.0.1:443"),
+                RejectsUtils.buildServiceUri("HTTPS", "10.0.0.1", 443)
+        );
+    }
+
+    @Test
+    void testTerrainExportCoordinateFormatting() {
+        assertEquals("0, 4, 8\n", RejectsUtils.formatRelativeCoord(-4, 0, 4, 4));
+        assertEquals("2, 0, 2\n", RejectsUtils.formatRelativeCoord(0, -2, 0, 2));
+    }
+
+    @Test
+    void testPacketFlyOutOfBoundsVector() {
+        Vec3 pos = new Vec3(10.5, 64.0, -20.25);
+        Vec3 oob = anticope.rejects.modules.PacketFly.computeOutOfBoundsVec(pos);
+        assertEquals(10.5, oob.x, 1e-6);
+        assertEquals(1564.0, oob.y, 1e-6);
+        assertEquals(-20.25, oob.z, 1e-6);
+        assertEquals(Vec3.ZERO, anticope.rejects.modules.PacketFly.computeOutOfBoundsVec(null));
+    }
+
+    @Test
+    void testInFovFullCircleAndNullEntitySafety() {
+        assertTrue(RejectsUtils.inFov(null, 360.0));
+        assertTrue(RejectsUtils.inFov(null, 400.0));
+        assertFalse(RejectsUtils.inFov(null, 90.0));
+    }
 }

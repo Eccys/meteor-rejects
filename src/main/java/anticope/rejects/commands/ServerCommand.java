@@ -111,12 +111,13 @@ public class ServerCommand extends Command {
 
     private MutableComponent formatPort(int port, InetAddress address) {
         MutableComponent text = Component.literal(String.format("- %s%d%s ", ChatFormatting.GREEN, port, ChatFormatting.GRAY));
+        String hostAddress = address.getHostAddress();
         if (ports.containsKey(port)) {
             text.append(ports.get(port));
             if (ports.get(port).startsWith("HTTP") || ports.get(port).startsWith("FTP")) {
                 text.setStyle(text.getStyle()
                         .withClickEvent(new ClickEvent.OpenUrl(
-                                URI.create(String.format("%s://%s:%d", ports.get(port).toLowerCase(), address.getHostAddress(), port))
+                                buildServiceUri(ports.get(port), hostAddress, port)
                         ))
                         .withHoverEvent(new HoverEvent.ShowText(
                                 Component.literal("Open in browser")
@@ -125,7 +126,7 @@ public class ServerCommand extends Command {
             } else if (Objects.equals(ports.get(port), "DynMap")) {
                 text.setStyle(text.getStyle()
                         .withClickEvent(new ClickEvent.OpenUrl(
-                                URI.create(String.format("http://%s:%d", address.getHostAddress(), port))
+                                buildServiceUri("http", hostAddress, port)
                         ))
                         .withHoverEvent(new HoverEvent.ShowText(
                                 Component.literal("Open in browser")
@@ -134,7 +135,7 @@ public class ServerCommand extends Command {
             } else {
                 text.setStyle(text.getStyle()
                         .withClickEvent(new ClickEvent.CopyToClipboard(
-                                String.format("%s:%d", address.getHostAddress(), port)
+                                formatHostPort(hostAddress, port)
                         ))
                         .withHoverEvent(new HoverEvent.ShowText(
                                 Component.literal("Copy")
@@ -144,7 +145,7 @@ public class ServerCommand extends Command {
         } else {
             text.setStyle(text.getStyle()
                     .withClickEvent(new ClickEvent.CopyToClipboard(
-                            String.format("%s:%d", address.getHostAddress(), port)
+                            formatHostPort(hostAddress, port)
                     ))
                     .withHoverEvent(new HoverEvent.ShowText(
                             Component.literal("Copy")
@@ -153,6 +154,14 @@ public class ServerCommand extends Command {
         }
 
         return text;
+    }
+
+    public static String formatHostPort(String hostAddress, int port) {
+        return anticope.rejects.utils.RejectsUtils.formatHostPort(hostAddress, port);
+    }
+
+    public static URI buildServiceUri(String scheme, String hostAddress, int port) {
+        return anticope.rejects.utils.RejectsUtils.buildServiceUri(scheme, hostAddress, port);
     }
 }
 

@@ -99,6 +99,8 @@ public class ChestAura extends Module {
     @Override
     public void onDeactivate() {
         MeteorClient.EVENT_BUS.unsubscribe(closeListener);
+        openedBlocks.clear();
+        timer = 0;
     }
 
     @EventHandler
@@ -125,7 +127,10 @@ public class ChestAura extends Module {
             BlockPos pos = block.getBlockPos();
             if (openedBlocks.containsKey(pos)) continue;
 
-            Runnable click = () -> mc.gameMode.useItemOn(mc.player, InteractionHand.MAIN_HAND, new BlockHitResult(new Vec3(pos.getX(), pos.getY(), pos.getZ()), Direction.UP, pos, false));
+            Runnable click = () -> {
+                if (mc.player == null || mc.gameMode == null) return;
+                mc.gameMode.useItemOn(mc.player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false));
+            };
             if (rotate.get()) Rotations.rotate(Rotations.getYaw(pos), Rotations.getPitch(pos), click);
             else click.run();
 
@@ -153,23 +158,25 @@ public class ChestAura extends Module {
                 MeteorClient.EVENT_BUS.unsubscribe(this);
                 return;
             }
+            if (event.packet == null) return;
             AbstractContainerMenu handler = mc.player.containerMenu;
-            if (event.packet.containerId() == handler.containerId) {
-                switch (closeCondition.get()) {
-                    case IfEmpty -> {
-                        NonNullList<ItemStack> stacks = NonNullList.create();
-                        int maxSlot = Math.max(0, Math.min(handler.slots.size(), SlotUtils.indexToId(SlotUtils.MAIN_START)));
-                        IntStream.range(0, maxSlot).mapToObj(handler.slots::get).map(Slot::getItem).forEach(stacks::add);
-                        if (stacks.stream().allMatch(ItemStack::isEmpty)) mc.player.closeContainer();
-                    }
-                    case Always -> mc.player.closeContainer();
-                    case AfterSteal -> {
-                        InventoryTweaks invTweaks = Modules.get() != null ? Modules.get().get(InventoryTweaks.class) : null;
-                        if (invTweaks != null) {
-                            ((IInventoryTweaks) invTweaks).stealCallback(() -> {
-                                if (mc.player != null) mc.player.closeContainer();
-                            });
-                        }
+            if (handler == null || handler == mc.player.inventoryMenu || event.packet.containerId() != handler.containerId) {
+                return;
+            }
+            switch (closeCondition.get()) {
+                case IfEmpty -> {
+                    NonNullList<ItemStack> stacks = NonNullList.create();
+                    int maxSlot = Math.max(0, Math.min(handler.slots.size(), SlotUtils.indexToId(SlotUtils.MAIN_START)));
+                    IntStream.range(0, maxSlot).mapToObj(handler.slots::get).map(Slot::getItem).forEach(stacks::add);
+                    if (stacks.stream().allMatch(ItemStack::isEmpty)) mc.player.closeContainer();
+                }
+                case Always -> mc.player.closeContainer();
+                case AfterSteal -> {
+                    InventoryTweaks invTweaks = Modules.get() != null ? Modules.get().get(InventoryTweaks.class) : null;
+                    if (invTweaks != null) {
+                        ((IInventoryTweaks) invTweaks).stealCallback(() -> {
+                            if (mc.player != null) mc.player.closeContainer();
+                        });
                     }
                 }
             }

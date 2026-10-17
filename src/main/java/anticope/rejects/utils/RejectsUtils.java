@@ -61,9 +61,44 @@ public class RejectsUtils {
         return sb.toString();
     }
 
+    public static boolean isValidProfileName(String name) {
+        if (name == null || name.isEmpty() || name.length() > 16) return false;
+        for (int i = 0; i < name.length(); i++) {
+            char c = name.charAt(i);
+            if (c <= 32 || c >= 127) return false;
+        }
+        return true;
+    }
+
+    public static String formatHostPort(String hostAddress, int port) {
+        if (hostAddress == null || hostAddress.isBlank()) {
+            return "127.0.0.1:" + port;
+        }
+        String cleanHost = hostAddress;
+        int scopeIdx = cleanHost.indexOf('%');
+        if (scopeIdx > 0) {
+            cleanHost = cleanHost.substring(0, scopeIdx);
+        }
+        if (cleanHost.contains(":") && !cleanHost.startsWith("[")) {
+            return String.format("[%s]:%d", cleanHost, port);
+        }
+        return String.format("%s:%d", cleanHost, port);
+    }
+
+    public static java.net.URI buildServiceUri(String scheme, String hostAddress, int port) {
+        String normalizedScheme = (scheme == null || scheme.isBlank())
+                ? "http"
+                : scheme.trim().toLowerCase(java.util.Locale.ROOT);
+        return java.net.URI.create(String.format("%s://%s", normalizedScheme, formatHostPort(hostAddress, port)));
+    }
+
+    public static String formatRelativeCoord(int x, int y, int z, int distance) {
+        return String.format("%d, %d, %d\n", x + distance, y + distance, z + distance);
+    }
+
     public static boolean inFov(Entity entity, double fov) {
         if (fov >= 360) return true;
-        if (mc.player == null || entity == null) return false;
+        if (entity == null || mc == null || mc.player == null) return false;
 
         Vec3 eyePos = mc.player.getEyePosition();
         AABB box = entity.getBoundingBox();
