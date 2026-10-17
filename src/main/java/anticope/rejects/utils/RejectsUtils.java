@@ -96,9 +96,56 @@ public class RejectsUtils {
         return String.format("%d, %d, %d\n", x + distance, y + distance, z + distance);
     }
 
+    public static long calculateFillVolume(int minX, int maxX, int minY, int maxY, int minZ, int maxZ) {
+        long dx = (long) Math.max(0, maxX - minX) + 1L;
+        long dy = (long) Math.max(0, maxY - minY) + 1L;
+        long dz = (long) Math.max(0, maxZ - minZ) + 1L;
+        return dx * dy * dz;
+    }
+
+    public static String extractSkinUrlFromProfileJson(String profileJson) {
+        if (profileJson == null || profileJson.isBlank()) {
+            return null;
+        }
+        try {
+            com.google.gson.Gson gson = new com.google.gson.Gson();
+            com.google.gson.JsonObject object = gson.fromJson(profileJson, com.google.gson.JsonObject.class);
+            if (object == null || !object.has("properties") || !object.get("properties").isJsonArray()) {
+                return null;
+            }
+            com.google.gson.JsonArray array = object.getAsJsonArray("properties");
+            if (array == null || array.isEmpty() || !array.get(0).isJsonObject()) {
+                return null;
+            }
+            com.google.gson.JsonObject property = array.get(0).getAsJsonObject();
+            if (!property.has("value") || property.get("value").isJsonNull()) {
+                return null;
+            }
+            byte[] decoded = java.util.Base64.getDecoder().decode(property.get("value").getAsString().trim());
+            String secondResponse = new String(decoded, java.nio.charset.StandardCharsets.UTF_8);
+            com.google.gson.JsonObject finalResponseObject = gson.fromJson(secondResponse, com.google.gson.JsonObject.class);
+            if (finalResponseObject == null || !finalResponseObject.has("textures") || !finalResponseObject.get("textures").isJsonObject()) {
+                return null;
+            }
+            com.google.gson.JsonObject texturesObject = finalResponseObject.getAsJsonObject("textures");
+            if (texturesObject == null || !texturesObject.has("SKIN") || !texturesObject.get("SKIN").isJsonObject()) {
+                return null;
+            }
+            com.google.gson.JsonObject skinObj = texturesObject.getAsJsonObject("SKIN");
+            if (skinObj == null || !skinObj.has("url") || skinObj.get("url").isJsonNull()) {
+                return null;
+            }
+            String url = skinObj.get("url").getAsString().trim();
+            return url.isEmpty() ? null : url;
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
     public static boolean inFov(Entity entity, double fov) {
+        if (entity == null || fov <= 0) return false;
         if (fov >= 360) return true;
-        if (entity == null || mc == null || mc.player == null) return false;
+        if (mc == null || mc.player == null) return false;
 
         Vec3 eyePos = mc.player.getEyePosition();
         AABB box = entity.getBoundingBox();

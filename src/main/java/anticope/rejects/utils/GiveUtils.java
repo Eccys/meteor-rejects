@@ -40,7 +40,7 @@ public class GiveUtils {
 
     public static final Map<String, Function<Boolean, ItemStack>> PRESETS = new HashMap<>();
 
-    private final static SimpleCommandExceptionType NOT_IN_CREATIVE = new SimpleCommandExceptionType(Component.literal("You must be in creative mode to use this."));
+    public final static SimpleCommandExceptionType NOT_IN_CREATIVE = new SimpleCommandExceptionType(Component.literal("You must be in creative mode to use this."));
     private final static SimpleCommandExceptionType NO_SPACE = new SimpleCommandExceptionType(Component.literal("No space in hotbar."));
 
     private static final List<Identifier> HIDDEN_ENTITIES = Arrays.asList(

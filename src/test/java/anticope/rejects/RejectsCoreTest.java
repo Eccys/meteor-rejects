@@ -344,8 +344,62 @@ class RejectsCoreTest {
 
     @Test
     void testInFovFullCircleAndNullEntitySafety() {
-        assertTrue(RejectsUtils.inFov(null, 360.0));
-        assertTrue(RejectsUtils.inFov(null, 400.0));
+        assertFalse(RejectsUtils.inFov(null, 360.0));
+        assertFalse(RejectsUtils.inFov(null, 400.0));
         assertFalse(RejectsUtils.inFov(null, 90.0));
+        assertFalse(RejectsUtils.inFov(null, 0.0));
+        assertFalse(RejectsUtils.inFov(null, -45.0));
+    }
+
+    @Test
+    void testChorusExploitResolveTeleportDestinationAndFillVolume() {
+        Vec3 current = new Vec3(100.0, 64.0, -200.0);
+        Vec3 packetPos = new Vec3(5.0, -2.0, 12.5);
+
+        // Absolute teleport (empty relatives)
+        Vec3 absResult = anticope.rejects.modules.ChorusExploit.resolveTeleportDestination(
+                current, packetPos, java.util.Collections.emptySet());
+        assertEquals(5.0, absResult.x, 1e-6);
+        assertEquals(-2.0, absResult.y, 1e-6);
+        assertEquals(12.5, absResult.z, 1e-6);
+
+        // Relative X and Z, absolute Y
+        Vec3 relXZ = anticope.rejects.modules.ChorusExploit.resolveTeleportDestination(
+                current,
+                packetPos,
+                java.util.EnumSet.of(net.minecraft.world.entity.Relative.X, net.minecraft.world.entity.Relative.Z));
+        assertEquals(105.0, relXZ.x, 1e-6);
+        assertEquals(-2.0, relXZ.y, 1e-6);
+        assertEquals(-187.5, relXZ.z, 1e-6);
+
+        // FillCommand volume calculation
+        assertEquals(1L, RejectsUtils.calculateFillVolume(0, 0, 64, 64, 0, 0));
+        assertEquals(1000L, RejectsUtils.calculateFillVolume(0, 9, 0, 9, 0, 9));
+    }
+
+    @Test
+    void testExtractSkinUrlFromProfileJson() {
+        String innerJson = "{\"textures\":{\"SKIN\":{\"url\":\"http://textures.minecraft.net/texture/abc123\"}}}";
+        String base64 = java.util.Base64.getEncoder().encodeToString(
+                innerJson.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        String profileJson = "{\"id\":\"069a79f444e94726a5befca90e38aaf5\",\"properties\":[{\"name\":\"textures\",\"value\":\"" + base64 + "\"}]}";
+
+        assertEquals(
+                "http://textures.minecraft.net/texture/abc123",
+                RejectsUtils.extractSkinUrlFromProfileJson(profileJson)
+        );
+
+        // Default skin profile with empty textures object must return null instead of throwing NPE
+        String emptyTexturesJson = "{\"textures\":{}}";
+        String emptyTexturesBase64 = java.util.Base64.getEncoder().encodeToString(
+                emptyTexturesJson.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        String defaultSkinProfile = "{\"properties\":[{\"name\":\"textures\",\"value\":\"" + emptyTexturesBase64 + "\"}]}";
+        assertNull(RejectsUtils.extractSkinUrlFromProfileJson(defaultSkinProfile));
+
+        assertNull(RejectsUtils.extractSkinUrlFromProfileJson(null));
+        assertNull(RejectsUtils.extractSkinUrlFromProfileJson("   "));
+        assertNull(RejectsUtils.extractSkinUrlFromProfileJson("{}"));
+        assertNull(RejectsUtils.extractSkinUrlFromProfileJson("{\"properties\":[]}"));
+        assertNull(RejectsUtils.extractSkinUrlFromProfileJson("{\"properties\":[{\"value\":\"!!!not-base64!!!\"}]}"));
     }
 }

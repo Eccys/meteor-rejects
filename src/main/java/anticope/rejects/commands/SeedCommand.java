@@ -40,15 +40,13 @@ public class SeedCommand extends Command {
         }));
 
         builder.then(literal("delete").executes(ctx -> {
-            Seed seed = Seeds.get().getSeed();
+            if (mc.hasSingleplayerServer()) throw NO_SEED.create();
+            String worldName = Utils.getWorldName();
+            Seed seed = (worldName != null && !worldName.isEmpty()) ? Seeds.get().seeds.remove(worldName) : null;
             if (seed == null) throw NO_SEED.create();
             MutableComponent text = Component.literal("Deleted ");
             text.append(seed.toText());
             info(text);
-            String worldName = Utils.getWorldName();
-            if (worldName != null) {
-                Seeds.get().seeds.remove(worldName);
-            }
             return SINGLE_SUCCESS;
         }));
 

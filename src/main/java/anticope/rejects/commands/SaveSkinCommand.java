@@ -45,9 +45,10 @@ public class SaveSkinCommand extends Command {
     public void build(LiteralArgumentBuilder<ClientSuggestionProvider> builder) {
         builder.then(argument("player", PlayerListEntryArgumentType.create()).executes(ctx -> {
             UUID id = PlayerListEntryArgumentType.get(ctx).getProfile().id();
+            filters.rewind();
             String path = TinyFileDialogs.tinyfd_saveFileDialog("Save image", null, filters, null);
-            if (path == null) throw IO_EXCEPTION.create();
-            if (!path.endsWith(".png")) path += ".png";
+            if (path == null || path.isBlank()) return SINGLE_SUCCESS;
+            if (!path.toLowerCase(java.util.Locale.ROOT).endsWith(".png")) path += ".png";
             saveSkin(id.toString(), path);
 
             return SINGLE_SUCCESS;
@@ -60,27 +61,16 @@ public class SaveSkinCommand extends Command {
             //request their minecraft profile, all so we can get a base64 encoded string that contains ANOTHER json that then has the skin URL
             String PROFILE_REQUEST_URL = "https://sessionserver.mojang.com/session/minecraft/profile/%s";
 
-            JsonObject object = Http.get(String.format(PROFILE_REQUEST_URL, uuid)).sendJson(JsonObject.class);
-            if (object == null || !object.has("properties")) {
+            String rawProfileJson = Http.get(String.format(PROFILE_REQUEST_URL, uuid)).sendString();
+            String skinURL = anticope.rejects.utils.RejectsUtils.extractSkinUrlFromProfileJson(rawProfileJson);
+            if (skinURL == null) {
                 throw IO_EXCEPTION.create();
             }
-            //Get the properties array which has what we need
-            JsonArray array = object.getAsJsonArray("properties");
-            if (array == null || array.isEmpty()) {
-                throw IO_EXCEPTION.create();
-            }
-            JsonObject property = array.get(0).getAsJsonObject();
-            //value is what we grab but it's encoded so we have to decode it
-            String base64String = property.get("value").getAsString();
-            byte[] bs = Base64.decodeBase64(base64String);
-            //Convert the response to json and pull the skin url from there
-            String secondResponse = new String(bs, StandardCharsets.UTF_8);
-            JsonObject finalResponseObject = GSON.fromJson(secondResponse, JsonObject.class);
-            JsonObject texturesObject = finalResponseObject.getAsJsonObject("textures");
-            JsonObject skinObj = texturesObject.getAsJsonObject("SKIN");
-            String skinURL = skinObj.get("url").getAsString();
 
-            try (InputStream in = new BufferedInputStream(new URL(skinURL).openStream());
+            java.net.URLConnection conn = new URL(skinURL).openConnection();
+            conn.setConnectTimeout(5000);
+            conn.setReadTimeout(5000);
+            try (InputStream in = new BufferedInputStream(conn.getInputStream());
                  ByteArrayOutputStream out = new ByteArrayOutputStream()) {
                 byte[] buf = new byte[1024];
                 int n;

@@ -20,6 +20,10 @@ public class TeleportCommand extends Command {
             if (mc.player == null) return SINGLE_SUCCESS;
             Vec3 pos = ClientPosArgumentType.getPos(ctx, "pos");
             mc.player.absSnapTo(pos.x(), pos.y(), pos.z());
+            if (mc.player.connection != null) {
+                mc.player.connection.send(new net.minecraft.network.protocol.game.ServerboundMovePlayerPacket.Pos(
+                        pos.x(), pos.y(), pos.z(), mc.player.onGround(), mc.player.horizontalCollision));
+            }
             return SINGLE_SUCCESS;
         }));
 
@@ -27,8 +31,12 @@ public class TeleportCommand extends Command {
             if (mc.player == null) return SINGLE_SUCCESS;
             Vec3 pos = ClientPosArgumentType.getPos(ctx, "pos");
             float yaw = FloatArgumentType.getFloat(ctx, "yaw");
-            float pitch = FloatArgumentType.getFloat(ctx, "pitch");
+            float pitch = net.minecraft.util.Mth.clamp(FloatArgumentType.getFloat(ctx, "pitch"), -90.0f, 90.0f);
             mc.player.absSnapTo(pos.x(), pos.y(), pos.z(), yaw, pitch);
+            if (mc.player.connection != null) {
+                mc.player.connection.send(new net.minecraft.network.protocol.game.ServerboundMovePlayerPacket.PosRot(
+                        pos.x(), pos.y(), pos.z(), yaw, pitch, mc.player.onGround(), mc.player.horizontalCollision));
+            }
             return SINGLE_SUCCESS;
         }))));
     }
