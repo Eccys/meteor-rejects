@@ -34,9 +34,9 @@ public class TerrainExport extends Command {
 
     @Override
     public void build(LiteralArgumentBuilder<ClientSuggestionProvider> builder) {
-        builder.then(argument("distance", IntegerArgumentType.integer(1)).executes(context -> {
+        builder.then(argument("distance", IntegerArgumentType.integer(1, 128)).executes(context -> {
             if (mc.player == null || mc.level == null) return SINGLE_SUCCESS;
-            int distance = IntegerArgumentType.getInteger(context, "distance");
+            int distance = Math.max(1, Math.min(128, IntegerArgumentType.getInteger(context, "distance")));
 
             StringBuilder stringBuilder = new StringBuilder();
             for (int x = -distance; x <= distance; x++) {
@@ -44,7 +44,7 @@ public class TerrainExport extends Command {
                     for (int y = distance; y >= -distance; y--) {
                         BlockPos pos = mc.player.blockPosition().offset(x, y, z);
                         if (mc.level.getBlockState(pos).isCollisionShapeFullBlock(mc.level, pos)) {
-                            stringBuilder.append(String.format("%d, %d, %d\n", x + distance, y + distance, z + distance));
+                            stringBuilder.append(formatRelativeCoord(x, y, z, distance));
                         }
                     }
                 }
@@ -52,7 +52,7 @@ public class TerrainExport extends Command {
 
             String path = TinyFileDialogs.tinyfd_saveFileDialog("Save data", null, filters, null);
             if (path == null) throw IO_EXCEPTION.create();
-            if (!path.endsWith(".txt"))
+            if (!path.toLowerCase(java.util.Locale.ROOT).endsWith(".txt"))
                 path += ".txt";
             try (FileWriter file = new FileWriter(path)) {
                 file.write(stringBuilder.toString().trim());
@@ -62,6 +62,10 @@ public class TerrainExport extends Command {
 
             return SINGLE_SUCCESS;
         }));
+    }
+
+    public static String formatRelativeCoord(int x, int y, int z, int distance) {
+        return anticope.rejects.utils.RejectsUtils.formatRelativeCoord(x, y, z, distance);
     }
 }
 

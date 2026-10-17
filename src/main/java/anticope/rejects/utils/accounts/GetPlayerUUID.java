@@ -13,36 +13,52 @@ import com.google.gson.JsonObject;
 public class GetPlayerUUID {
 
     public static UUID getUUID(String playerName) {
-        // Thanks Bento
+        if (playerName == null || playerName.isBlank()) {
+            return UUID.randomUUID();
+        }
+        UUID parsed = parseUuidFromMojangJson(
+                getURLContent("https://api.mojang.com/users/profiles/minecraft/" + playerName.trim()));
+        return parsed != null ? parsed : UUID.randomUUID();
+    }
+
+    public static UUID parseUuidFromMojangJson(String json) {
+        if (json == null || json.isBlank()) {
+            return null;
+        }
         try {
             Gson gsonReader = new Gson();
-            JsonObject jsonObject = gsonReader.fromJson(
-                    getURLContent("https://api.mojang.com/users/profiles/minecraft/" + playerName),
-                    JsonObject.class);
-
-            String userIdString = jsonObject.get("id").toString().replace("\"", "")
-                    .replaceFirst("(\\w{8})(\\w{4})(\\w{4})(\\w{4})(\\w{12})", "$1-$2-$3-$4-$5");
-
-            return UUID.fromString(userIdString);
+            JsonObject jsonObject = gsonReader.fromJson(json, JsonObject.class);
+            if (jsonObject == null || !jsonObject.has("id") || jsonObject.get("id").isJsonNull()) {
+                return null;
+            }
+            String rawId = jsonObject.get("id").getAsString().trim();
+            String dashed = rawId.contains("-")
+                    ? rawId
+                    : rawId.replaceFirst("(\\p{XDigit}{8})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}{12})", "$1-$2-$3-$4-$5");
+            return UUID.fromString(dashed);
         } catch (Exception ignored) {
-            return UUID.randomUUID();
+            return null;
         }
     }
 
     private static String getURLContent(String requestedUrl) {
-        String returnValue;
-
+        HttpURLConnection conn = null;
         try {
             URL url = new URL(requestedUrl);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            returnValue = br.lines().collect(Collectors.joining());
-            br.close();
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setConnectTimeout(5000);
+            conn.setReadTimeout(5000);
+            try (BufferedReader br = new BufferedReader(
+                    new InputStreamReader(conn.getInputStream(), java.nio.charset.StandardCharsets.UTF_8))) {
+                return br.lines().collect(Collectors.joining());
+            }
         } catch (Exception e) {
-            returnValue = "";
+            return "";
+        } finally {
+            if (conn != null) {
+                conn.disconnect();
+            }
         }
-
-        return returnValue;
     }
 
 }

@@ -82,7 +82,7 @@ public class BoatPhase extends Module {
     @Override
     public void onActivate() {
         boat = null;
-        if (Modules.get().isActive(BoatGlitch.class)) Modules.get().get(BoatGlitch.class).toggle();
+        if (Modules.get() != null && Modules.get().isActive(BoatGlitch.class)) Modules.get().get(BoatGlitch.class).toggle();
     }
 
     @Override
@@ -110,7 +110,7 @@ public class BoatPhase extends Module {
             boat = null;
         }
 
-        if (boat != null) {
+        if (boat != null && event.boat == boat) {
             boat.noPhysics = true;
             //boat.pushSpeedReduction = 1;
 

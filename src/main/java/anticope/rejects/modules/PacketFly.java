@@ -132,11 +132,13 @@ public class PacketFly extends Module {
     @Override
     public void onDeactivate() {
         packets.clear();
+        flightCounter = 0;
+        teleportID = 0;
     }
 
     @EventHandler
     public void onSendMovementPackets(SendMovementPacketsEvent.Pre event) {
-        if (mc.player == null || mc.level == null) return;
+        if (mc.player == null || mc.level == null || mc.player.input == null) return;
         mc.player.setDeltaMovement(0.0,0.0,0.0);
         double speed = 0.0;
         boolean checkCollisionBoxes = checkHitBoxes();
@@ -218,7 +220,11 @@ public class PacketFly extends Module {
     }
 
     private Vec3 outOfBoundsVec(Vec3 offset, Vec3 position) {
-        return position.add(0.0, 1500.0, 0.0);
+        return computeOutOfBoundsVec(position);
+    }
+
+    public static Vec3 computeOutOfBoundsVec(Vec3 position) {
+        return position == null ? Vec3.ZERO : position.add(0.0, 1500.0, 0.0);
     }
 
     private void packetSender(ServerboundMovePlayerPacket packet) {
